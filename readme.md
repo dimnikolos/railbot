@@ -11,18 +11,24 @@
 * **Track-Based Commands:** Programming blocks are the actual tracks ('Straight', 'Turn Left', 'Turn Right').
 * **Ego-Centric Navigation:** Turns are calculated from the train's perspective, teaching mental rotation and spatial awareness.
 * **Visual Execution:** The code becomes the physical path. The train builds the grid route based on the queue.
-* **Objective:** Navigate the grid and connect the path to various target stations.
+* **Interactive Timeline:** Players can click on any executed command in the queue to instantly simulate and jump to that exact state in time (scrubbing), making debugging intuitive and visual.
+* **Objective:** Navigate the grid and connect the path to various train stations.
+
+## 🎨 Design & Immersion
+* **Clean UI:** Glassmorphism and minimalist grid lines prevent visual clutter, focusing attention on the puzzle.
+* **Audio Feedback:** Authentic train chugging and whistling sounds respond to the player's code execution.
 
 ## 🧠 Educational Value
 Tailored specifically for the cognitive load of Kindergarten and 1st-grade students:
 * **Algorithmic Sequencing:** Encourages planning a logical sequence of steps before execution.
 * **Spatial Orientation:** Transitions learners from an external viewpoint to an ego-centric perspective.
-* **Self-Correction:** Clear grid boundaries provide immediate, non-punitive feedback when the sequence fails.
+* **Self-Correction & Debugging:** Clear grid boundaries and an interactive timeline provide immediate, non-punitive feedback.
 
 ## 🚀 Getting Started
-
 
 ### Running Locally
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/dimnikolos/railbot.git](https://github.com/dimnikolos/railbot.git)
+   git clone https://github.com/dimnikolos/railbot.git
+   ```
+2. Simply open `index.html` in your browser. No build steps required!

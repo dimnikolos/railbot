@@ -41,7 +41,7 @@
       <div id="passengerLayer" class="overlay-layer"></div>
 
       <!-- The Train -->
-      <img src="top_down_train.png" id="train" class="train" alt="Train">
+      <img src="top_down_train2.png" id="train" class="train" alt="Train">
     </div>
 
     <div class="controls-panel glass">
@@ -82,6 +82,11 @@
             <path d="M8 5v14l11-7z" />
           </svg>
         </button>
+        <button class="control-btn action-btn stop-btn" id="btnStop" title="Stop">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="6" width="12" height="12" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -118,7 +123,15 @@
     </div>
   </div>
 
-  <audio id="audioTrack" src="resource/EPRobotMaze.mp3" loop></audio>
+  <audio id="audioTrack" loop>
+    <source src="background_music.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audioMove" loop>
+    <source src="train_move.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audioWhistle">
+    <source src="train_whistle.mp3" type="audio/mpeg">
+  </audio>
 
   <script src="activity.js"></script>
 </body>

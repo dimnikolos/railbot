@@ -63,10 +63,12 @@ body {
   position: relative;
   width: calc((var(--cell-size) * 5) + (var(--grid-gap) * 4));
   height: calc((var(--cell-size) * 5) + (var(--grid-gap) * 4));
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 2px 10px rgba(255, 255, 255, 0.3);
 }
 
 .grid {
@@ -81,7 +83,7 @@ body {
 .grid-cell {
   background: rgba(255, 255, 255, 0.5);
   border-radius: 8px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .overlay-layer {
@@ -96,8 +98,8 @@ body {
 /* Entities */
 .train {
   position: absolute;
-  width: calc(var(--cell-size) * 0.3);
-  height: calc(var(--cell-size) * 0.3);
+  width: calc(var(--cell-size) * 0.6);
+  height: calc(var(--cell-size) * 0.6);
   top: 0;
   left: 0;
   /* Smooth Arc Animation */
@@ -118,14 +120,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2.5rem;
-  transition: transform 0.3s, opacity 0.3s;
-  z-index: 5;
+  transition: filter 0.5s ease, opacity 0.5s ease;
+  z-index: 3;
 }
 
 .passenger.collected {
-  transform: scale(1.5);
-  opacity: 0;
+  filter: grayscale(100%);
+  opacity: 0.6;
 }
 
 .track {
@@ -183,6 +184,13 @@ body {
   flex-shrink: 0;
   animation: slideIn 0.2s ease-out;
   color: var(--primary);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.queue-item:hover {
+  transform: scale(1.1);
+  background: #f8fafc;
 }
 
 .queue-item svg {
@@ -194,6 +202,12 @@ body {
   background: var(--primary);
   color: white;
   transform: scale(1.1);
+}
+
+.queue-item.executed {
+  background: #cbd5e1;
+  color: #64748b;
+  box-shadow: none;
 }
 
 .buttons-row {
@@ -255,6 +269,23 @@ body {
 .action-btn.play-btn svg {
   width: 32px;
   height: 32px;
+}
+
+.action-btn.stop-btn {
+  background: var(--stop);
+  color: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+}
+
+.action-btn.stop-btn:hover {
+  background: #dc2626;
+}
+
+.action-btn.stop-btn svg {
+  width: 28px;
+  height: 28px;
 }
 
 .action-btn.delete-btn {

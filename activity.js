@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const CELL_SIZE = 80;
   const GAP_SIZE = 4;
   const STEP = CELL_SIZE + GAP_SIZE; // Total pixels per tile jump
-  const TRAIN_SIZE_MULT = 0.3; // Train size relative to CELL_SIZE (was 0.1)
+  const TRAIN_SIZE_MULT = 0.6; // Train size relative to CELL_SIZE
 
   // DOM Elements
   const grid = document.getElementById('grid');
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLeft = document.getElementById('btnLeft');
   const btnRight = document.getElementById('btnRight');
   const btnPlay = document.getElementById('btnPlay');
+  const btnStop = document.getElementById('btnStop');
   const btnClear = document.getElementById('btnClear');
   const levelDisplay = document.getElementById('levelDisplay');
 
@@ -31,10 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSoundOff = document.getElementById('btnSoundOff');
   const btnSoundOn = document.getElementById('btnSoundOn');
   const audioTrack = document.getElementById('audioTrack');
+  const audioMove = document.getElementById('audioMove');
+  const audioWhistle = document.getElementById('audioWhistle');
 
   // Game State
   let queue = [];
   let isPlaying = false;
+  let isStopped = false;
   let level = 1;
   let isFast = false;
   let isSoundOn = false;
@@ -92,7 +96,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function addPassenger(x, y) {
     const p = document.createElement('div');
     p.className = 'passenger';
-    p.textContent = '🧍';
+    p.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">
+      <!-- Platform -->
+      <rect x="4" y="24" width="40" height="6" rx="2" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
+      <!-- Main Building -->
+      <rect x="8" y="12" width="32" height="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
+      <!-- Roof -->
+      <path d="M 4 12 L 24 2 L 44 12 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5" stroke-linejoin="round"/>
+      <!-- Clock -->
+      <circle cx="24" cy="8" r="2.5" fill="#ffffff" stroke="#991b1b" stroke-width="1"/>
+      <line x1="24" y1="8" x2="24" y2="6.5" stroke="#991b1b" stroke-width="0.5"/>
+      <line x1="24" y1="8" x2="25.5" y2="8" stroke="#991b1b" stroke-width="0.5"/>
+      <!-- Door -->
+      <rect x="20" y="16" width="8" height="8" rx="1" fill="#78350f"/>
+      <!-- Windows -->
+      <rect x="12" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
+      <rect x="31" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
+    </svg>`;
     p.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
     passengerLayer.appendChild(p);
     passengers.push({ x, y, el: p, collected: false });
@@ -100,12 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getAbsPos(x, y, dir) {
     const trainSize = CELL_SIZE * TRAIN_SIZE_MULT;
-    const centerOffset = (CELL_SIZE - trainSize) / 2;
-    let offsetX = 0, offsetY = 0;
-    if (dir === 0) { offsetX = centerOffset; offsetY = CELL_SIZE - trainSize; }
-    else if (dir === 1) { offsetX = 0; offsetY = centerOffset; }
-    else if (dir === 2) { offsetX = centerOffset; offsetY = 0; }
-    else if (dir === 3) { offsetX = CELL_SIZE - trainSize; offsetY = centerOffset; }
+    const halfSize = trainSize / 2;
+    const center = CELL_SIZE / 2;
+    
+    let cx, cy;
+    if (dir === 0) { cx = center; cy = CELL_SIZE; }
+    else if (dir === 1) { cx = 0; cy = center; }
+    else if (dir === 2) { cx = center; cy = 0; }
+    else if (dir === 3) { cx = CELL_SIZE; cy = center; }
+    
+    const offsetX = cx - halfSize;
+    const offsetY = cy - halfSize;
+    
     return { x: x * STEP + offsetX, y: y * STEP + offsetY };
   }
 
@@ -131,15 +157,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (cmd === 'right' || cmd === 'left') {
         if (cmd === 'right') {
-          if (dir === 0) { cx = tx * STEP + STEP; cy = ty * STEP + STEP; }
-          else if (dir === 1) { cx = tx * STEP; cy = ty * STEP + STEP; }
+          if (dir === 0) { cx = tx * STEP + CELL_SIZE; cy = ty * STEP + CELL_SIZE; }
+          else if (dir === 1) { cx = tx * STEP; cy = ty * STEP + CELL_SIZE; }
           else if (dir === 2) { cx = tx * STEP; cy = ty * STEP; }
-          else if (dir === 3) { cx = tx * STEP + STEP; cy = ty * STEP; }
+          else if (dir === 3) { cx = tx * STEP + CELL_SIZE; cy = ty * STEP; }
         } else {
-          if (dir === 0) { cx = tx * STEP; cy = ty * STEP + STEP; }
+          if (dir === 0) { cx = tx * STEP; cy = ty * STEP + CELL_SIZE; }
           else if (dir === 1) { cx = tx * STEP; cy = ty * STEP; }
-          else if (dir === 2) { cx = tx * STEP + STEP; cy = ty * STEP; }
-          else if (dir === 3) { cx = tx * STEP + STEP; cy = ty * STEP + STEP; }
+          else if (dir === 2) { cx = tx * STEP + CELL_SIZE; cy = ty * STEP; }
+          else if (dir === 3) { cx = tx * STEP + CELL_SIZE; cy = ty * STEP + CELL_SIZE; }
         }
         const sxCenter = startAbs.x + trainSize / 2;
         const syCenter = startAbs.y + trainSize / 2;
@@ -178,14 +204,72 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function simulateQueueTo(targetIndex) {
+    if (isPlaying) return;
+    setupLevel(); // Reset everything
+
+    const allItems = queueDisplay.querySelectorAll('.queue-item');
+    allItems.forEach(item => {
+      item.classList.remove('executed');
+      item.classList.remove('active');
+    });
+
+    for (let i = 0; i <= targetIndex; i++) {
+      if (i >= queue.length) break;
+      const cmd = queue[i];
+
+      // Spawn track at CURRENT position
+      spawnTrack(trainState.x, trainState.y, trainState.rotation, cmd);
+
+      let nextX = trainState.x;
+      let nextY = trainState.y;
+      let nextDir = trainState.dir;
+      let nextRotation = trainState.rotation;
+
+      if (cmd === 'left') {
+        nextDir = (trainState.dir + 3) % 4;
+        nextRotation -= 90;
+      } else if (cmd === 'right') {
+        nextDir = (trainState.dir + 1) % 4;
+        nextRotation += 90;
+      }
+
+      if (nextDir === 0) nextY -= 1;
+      else if (nextDir === 1) nextX += 1;
+      else if (nextDir === 2) nextY += 1;
+      else if (nextDir === 3) nextX -= 1;
+
+      if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
+        showError("Έξοδος από τις ράγες!");
+        trainEl.classList.add('error');
+        updateQueueActive(i);
+        updateTrainTransform(0);
+        return; // STOP simulation
+      }
+
+      trainState.x = nextX;
+      trainState.y = nextY;
+      trainState.dir = nextDir;
+      trainState.rotation = nextRotation;
+
+      checkPassengers();
+      if (allItems[i]) allItems[i].classList.add('executed');
+    }
+
+    updateQueueActive(targetIndex);
+    updateTrainTransform(0);
+  }
+
   // Queue logic
   function addToQueue(cmd) {
     if (isPlaying) return;
     queue.push(cmd);
+    const index = queue.length - 1;
 
     const q = document.createElement('div');
     q.className = 'queue-item';
     q.innerHTML = ICONS[cmd];
+    q.addEventListener('click', () => simulateQueueTo(index));
     queueDisplay.appendChild(q);
     queueDisplay.scrollLeft = queueDisplay.scrollWidth;
   }
@@ -221,12 +305,32 @@ document.addEventListener('DOMContentLoaded', () => {
   async function playQueue() {
     if (queue.length === 0 || isPlaying) return;
     isPlaying = true;
+    isStopped = false;
+
+    if (isSoundOn && audioMove) {
+      audioMove.play().catch(e => console.log('Audio blocked:', e));
+    }
+
+    // Reset executed items
+    const allItems = queueDisplay.querySelectorAll('.queue-item');
+    allItems.forEach(item => item.classList.remove('executed'));
+
     setupLevel(); // clean start before execution
 
     // Slight pause before starting
     await delay(300);
 
     for (let i = 0; i < queue.length; i++) {
+      if (isStopped) {
+        isStopped = false;
+        setupLevel();
+        const allItems = queueDisplay.querySelectorAll('.queue-item');
+        allItems.forEach(item => {
+          item.classList.remove('executed');
+          item.classList.remove('active');
+        });
+        break;
+      }
       const cmd = queue[i];
       updateQueueActive(i); // highlight active
 
@@ -259,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Boundary check BEFORE moving
       if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-        showError("Έξοδος από τις ράγες!");
+        showError("Out of rails!");
         trainEl.classList.add('error');
         isPlaying = false;
         updateQueueActive(-1);
@@ -278,20 +382,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Collect Passengers
       checkPassengers();
-      
+
+      // Mark as executed
+      const items = queueDisplay.querySelectorAll('.queue-item');
+      if (items[i]) items[i].classList.add('executed');
+
       // Tiny gap between commands
       const gapSpeed = isFast ? 30 : 100;
-      await delay(gapSpeed); 
+      await delay(gapSpeed);
     }
 
     // Finished loop
     updateQueueActive(-1);
     isPlaying = false;
+    if (audioMove) audioMove.pause();
 
     // Check if won
     const remaining = passengers.filter(p => !p.collected).length;
     if (remaining === 0) {
-      showError("Επίπεδο Ολοκληρώθηκε! 🎉");
+      showError("Level completed! 🎉");
       level++;
       levelDisplay.textContent = level;
       setTimeout(() => clearQueue(), 2000);
@@ -338,6 +447,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!p.collected && p.x === trainState.x && p.y === trainState.y) {
         p.collected = true;
         p.el.classList.add('collected');
+        if (isSoundOn && audioWhistle) {
+          audioWhistle.currentTime = 0;
+          audioWhistle.play().catch(e => console.log('Audio blocked:', e));
+        }
       }
     });
   }
@@ -354,6 +467,21 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRight.addEventListener('click', () => addToQueue('right'));
   btnClear.addEventListener('click', clearQueue);
   btnPlay.addEventListener('click', playQueue);
+
+  function stopAndReset() {
+    isStopped = true;
+    if (audioMove) audioMove.pause();
+    if (!isPlaying) {
+      setupLevel();
+      const allItems = queueDisplay.querySelectorAll('.queue-item');
+      allItems.forEach(item => {
+        item.classList.remove('executed');
+        item.classList.remove('active');
+      });
+    }
+  }
+
+  btnStop.addEventListener('click', stopAndReset);
 
   // Settings Event Listeners
   btnSettings.addEventListener('click', () => settingsModal.classList.add('show'));
@@ -377,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSoundOn.classList.remove('active');
     audioTrack.pause();
     audioTrack.currentTime = 0;
+    if (audioMove) audioMove.pause();
   });
 
   btnSoundOn.addEventListener('click', () => {
@@ -395,12 +524,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Determine the minimum width and height needed by the game container un-scaled
     const minWidth = 480;  // 416 board + padding
     const minHeight = 650; // header + board + controls + padding
-    
+
     const padding = 20; // safe area margin
     const scaleX = window.innerWidth / (minWidth + padding);
     const scaleY = window.innerHeight / (minHeight + padding);
     let scale = Math.min(scaleX, scaleY, 1); // Scale down if needed, but not up above 1
-    
+
     // Apply transform visually
     gameContainer.style.transform = `scale(${scale})`;
   }

@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioTrack = document.getElementById('audioTrack');
   const audioMove = document.getElementById('audioMove');
   const audioWhistle = document.getElementById('audioWhistle');
+  const btnDeleteSingleOff = document.getElementById('btnDeleteSingleOff');
+  const btnDeleteSingleOn = document.getElementById('btnDeleteSingleOn');
 
   // Game State
   let queue = [];
@@ -42,6 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let level = 1;
   let isFast = false;
   let isSoundOn = false;
+  let isDeleteSingleOn = false;
+
+  window.setCurrentLevel = function(lvl) {
+    level = lvl;
+    levelDisplay.textContent = level;
+    stopAndReset(); // this stops any playing and calls setupLevel()
+  };
 
   // Directions: 0=Up, 1=Right, 2=Down, 3=Left
   // Wait, in standard 2D top-down CSS, Up is -Y.
@@ -55,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let passengers = []; // array of {x, y, el}
+  let boulders = []; // array of {x, y, el}
 
   // Icons for Queue
   const ICONS = {
@@ -62,6 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
     'left': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 10L5 6l4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 6h8a6 6 0 016 6v7"/></svg>',
     'right': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4-4-4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M19 6h-8a6 6 0 00-6 6v7"/></svg>'
   };
+
+  const BOULDER_SVG = `<svg viewBox="0 0 80 80" width="100%" height="100%">
+    <!-- Boulder 1 -->
+    <path d="M 20 60 Q 30 30 50 50 Q 70 70 40 75 Q 15 70 20 60 Z" fill="#64748b" stroke="#475569" stroke-width="2"/>
+    <!-- Boulder 2 -->
+    <path d="M 40 55 Q 50 20 70 40 Q 80 65 60 70 Q 30 65 40 55 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+    <!-- Boulder 3 -->
+    <path d="M 10 50 Q 20 20 40 35 Q 30 60 15 55 Z" fill="#475569" stroke="#334155" stroke-width="2"/>
+  </svg>`;
 
   // Init grid visuals
   for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
@@ -79,18 +98,18 @@ document.addEventListener('DOMContentLoaded', () => {
     trackLayer.innerHTML = '';
     passengerLayer.innerHTML = '';
     passengers = [];
+    boulders = [];
 
-    // Add some passengers depending on level (placeholder positions)
-    if (level === 1) {
-      addPassenger(0, 1);
-      addPassenger(3, 1);
-    } else if (level === 2) {
-      addPassenger(1, 2);
-      addPassenger(4, 0);
-    } else {
-      addPassenger(2, 2);
-      addPassenger(4, 4);
-    }
+    // Add passengers from global level data
+    const levelData = window.LEVELS[level] || [];
+    levelData.forEach(item => {
+      const type = item.type || 'station';
+      if (type === 'station') {
+        addPassenger(item.x, item.y);
+      } else if (type === 'boulder') {
+        addBoulder(item.x, item.y);
+      }
+    });
   }
 
   function addPassenger(x, y) {
@@ -116,6 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
     p.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
     passengerLayer.appendChild(p);
     passengers.push({ x, y, el: p, collected: false });
+  }
+
+  function addBoulder(x, y) {
+    const b = document.createElement('div');
+    b.className = 'passenger boulder'; // reuse passenger class for positioning
+    b.innerHTML = BOULDER_SVG;
+    b.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
+    passengerLayer.appendChild(b);
+    boulders.push({ x, y, el: b });
   }
 
   function getAbsPos(x, y, dir) {
@@ -239,18 +267,26 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (nextDir === 2) nextY += 1;
       else if (nextDir === 3) nextX -= 1;
 
+      trainState.x = nextX;
+      trainState.y = nextY;
+      trainState.dir = nextDir;
+      trainState.rotation = nextRotation;
+
       if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-        showError("Έξοδος από τις ράγες!");
+        showError("Derailment! Out of rails!");
         trainEl.classList.add('error');
         updateQueueActive(i);
         updateTrainTransform(0);
         return; // STOP simulation
       }
 
-      trainState.x = nextX;
-      trainState.y = nextY;
-      trainState.dir = nextDir;
-      trainState.rotation = nextRotation;
+      if (boulders.some(b => b.x === nextX && b.y === nextY)) {
+        showError("Crashed into boulders! 💥");
+        trainEl.classList.add('error');
+        updateQueueActive(i);
+        updateTrainTransform(0);
+        return; // STOP simulation
+      }
 
       checkPassengers();
       if (allItems[i]) allItems[i].classList.add('executed');
@@ -264,12 +300,33 @@ document.addEventListener('DOMContentLoaded', () => {
   function addToQueue(cmd) {
     if (isPlaying) return;
     queue.push(cmd);
-    const index = queue.length - 1;
 
     const q = document.createElement('div');
     q.className = 'queue-item';
     q.innerHTML = ICONS[cmd];
-    q.addEventListener('click', () => simulateQueueTo(index));
+    
+    const delBtn = document.createElement('span');
+    delBtn.className = 'delete-x';
+    delBtn.innerHTML = '×';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // prevent simulateQueueTo
+      const currentItems = Array.from(queueDisplay.querySelectorAll('.queue-item'));
+      const idx = currentItems.indexOf(q);
+      if (idx > -1) {
+        queue.splice(idx, 1);
+        q.remove();
+        // Re-simulate to the item before the deleted one
+        simulateQueueTo(idx - 1);
+      }
+    });
+    q.appendChild(delBtn);
+    
+    q.addEventListener('click', () => {
+      const currentItems = Array.from(queueDisplay.querySelectorAll('.queue-item'));
+      const idx = currentItems.indexOf(q);
+      simulateQueueTo(idx);
+    });
+    
     queueDisplay.appendChild(q);
     queueDisplay.scrollLeft = queueDisplay.scrollWidth;
   }
@@ -361,15 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (nextDir === 2) nextY += 1; // Down
       else if (nextDir === 3) nextX -= 1; // Left
 
-      // Boundary check BEFORE moving
-      if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-        showError("Out of rails!");
-        trainEl.classList.add('error');
-        isPlaying = false;
-        updateQueueActive(-1);
-        return; // STOP execution
-      }
-
       // Update state
       trainState.x = nextX;
       trainState.y = nextY;
@@ -379,6 +427,24 @@ document.addEventListener('DOMContentLoaded', () => {
       // Animate smoothly
       const animSpeed = isFast ? 300 : 1000;
       await animateTrain(startState, trainState, cmd, animSpeed);
+
+      // Boundary check AFTER moving
+      if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
+        showError("Derailment! Out of rails!");
+        trainEl.classList.add('error');
+        isPlaying = false;
+        updateQueueActive(-1);
+        return; // STOP execution
+      }
+
+      // Boulder check AFTER moving
+      if (boulders.some(b => b.x === nextX && b.y === nextY)) {
+        showError("Crashed into boulders! 💥");
+        trainEl.classList.add('error');
+        isPlaying = false;
+        updateQueueActive(-1);
+        return; // STOP execution
+      }
 
       // Collect Passengers
       checkPassengers();
@@ -513,6 +579,20 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSoundOn.classList.add('active');
     btnSoundOff.classList.remove('active');
     audioTrack.play().catch(e => console.log('Audio playback blocked:', e));
+  });
+
+  btnDeleteSingleOff.addEventListener('click', () => {
+    isDeleteSingleOn = false;
+    btnDeleteSingleOff.classList.add('active');
+    btnDeleteSingleOn.classList.remove('active');
+    document.body.classList.remove('delete-single-mode');
+  });
+
+  btnDeleteSingleOn.addEventListener('click', () => {
+    isDeleteSingleOn = true;
+    btnDeleteSingleOn.classList.add('active');
+    btnDeleteSingleOff.classList.remove('active');
+    document.body.classList.add('delete-single-mode');
   });
 
   // Init

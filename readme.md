@@ -11,7 +11,8 @@
 * **Track-Based Commands:** Programming blocks are the actual tracks ('Straight', 'Turn Left', 'Turn Right').
 * **Ego-Centric Navigation:** Turns are calculated from the train's perspective, teaching mental rotation and spatial awareness.
 * **Visual Execution:** The code becomes the physical path. The train builds the grid route based on the queue.
-* **Interactive Timeline:** Players can click on any executed command in the queue to instantly simulate and jump to that exact state in time (scrubbing), making debugging intuitive and visual.
+* **Interactive Timeline & Single Command Delete:** Players can click on any executed command in the queue to instantly simulate and jump to that exact state in time (scrubbing), making debugging intuitive and visual. A toggleable setting allows deleting individual commands for granular editing without starting over.
+* **In-Game Level Builder:** An intuitive visual grid editor allows players and educators to design custom levels directly in the browser. These levels are saved locally and can include stations and obstacles (boulders).
 * **Objective:** Navigate the grid and connect the path to various train stations.
 
 ## 🎨 Design & Immersion

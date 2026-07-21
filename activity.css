@@ -173,19 +173,43 @@ body {
 }
 
 .queue-item {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-  animation: slideIn 0.2s ease-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 2px solid #e2e8f0;
   color: var(--primary);
+  flex-shrink: 0;
+  transition: all 0.2s;
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
+  position: relative;
+}
+
+.delete-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  display: none;
+  z-index: 10;
+}
+
+body.delete-single-mode .queue-item.active .delete-x {
+  display: flex;
 }
 
 .queue-item:hover {
@@ -344,12 +368,10 @@ body {
 @keyframes pulse-red {
   0% {
     filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
-    transform: scale(1);
   }
 
   100% {
-    filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1));
-    transform: scale(1.1);
+    filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1)) brightness(1.2);
   }
 }
 
@@ -413,4 +435,49 @@ body {
   opacity: 1;
   filter: grayscale(0%);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Builder Mode Styles */
+.board-container.builder-mode .grid-cell {
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.board-container.builder-mode .grid-cell:hover {
+  background: rgba(59, 130, 246, 0.3);
+  transform: scale(0.95);
+}
+
+.builder-active-toast {
+  background: #3b82f6 !important;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Levels Grid */
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.level-box {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.level-box:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }

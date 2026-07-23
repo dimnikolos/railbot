@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Config
-  const GRID_SIZE = 5;
+  // Config for Advanced Mode (8x8)
+  const GRID_SIZE = 8;
   const CELL_SIZE = 80;
   const GAP_SIZE = 4;
   const STEP = CELL_SIZE + GAP_SIZE; // Total pixels per tile jump
@@ -11,19 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const trackLayer = document.getElementById('trackLayer');
   const passengerLayer = document.getElementById('passengerLayer');
   const trainEl = document.getElementById('train');
-  const queueDisplay = document.getElementById('queueDisplay');
   const toast = document.getElementById('toast');
   const toastMsg = document.getElementById('toastMsg');
+  const levelDisplay = document.getElementById('levelDisplay');
 
-  const btnStraight = document.getElementById('btnStraight');
-  const btnLeft = document.getElementById('btnLeft');
-  const btnRight = document.getElementById('btnRight');
   const btnPlay = document.getElementById('btnPlay');
   const btnStop = document.getElementById('btnStop');
   const btnClear = document.getElementById('btnClear');
-  const levelDisplay = document.getElementById('levelDisplay');
+  
+  const audioMove = document.getElementById('audioMove');
+  const audioWhistle = document.getElementById('audioWhistle');
 
-  // Settings DOM
   const btnSettings = document.getElementById('btnSettings');
   const settingsModal = document.getElementById('settingsModal');
   const btnCloseSettings = document.getElementById('btnCloseSettings');
@@ -31,11 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnHare = document.getElementById('btnHare');
   const btnSoundOff = document.getElementById('btnSoundOff');
   const btnSoundOn = document.getElementById('btnSoundOn');
-  const audioTrack = document.getElementById('audioTrack');
-  const audioMove = document.getElementById('audioMove');
-  const audioWhistle = document.getElementById('audioWhistle');
-  const btnDeleteSingleOff = document.getElementById('btnDeleteSingleOff');
-  const btnDeleteSingleOn = document.getElementById('btnDeleteSingleOn');
 
   // Game State
   let queue = [];
@@ -43,42 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
   let isStopped = false;
   let level = 1;
   let isFast = false;
-  let isSoundOn = false;
-  let isDeleteSingleOn = false;
-
-  window.setCurrentLevel = function(lvl) {
-    level = lvl;
-    levelDisplay.textContent = level;
-    stopAndReset(); // this stops any playing and calls setupLevel()
-  };
+  let isSoundOn = true;
 
   // Directions: 0=Up, 1=Right, 2=Down, 3=Left
-  // Wait, in standard 2D top-down CSS, Up is -Y.
-  // The train starts at bottom-left (0, 4) facing Right (1) or Up (0)?
-  // Let's start at bottom-left facing Up (0).
   let trainState = {
     x: 0,
-    y: 4,
-    dir: 0, // 0: up, 1: right, 2: down, 3: left
-    rotation: 0 // continuous rotation for smooth tweening
+    y: 7, // Bottom left of 8x8 is (0,7)
+    dir: 0, // facing up
+    rotation: 0 
   };
 
-  let passengers = []; // array of {x, y, el}
-  let boulders = []; // array of {x, y, el}
-
-  // Icons for Queue
-  const ICONS = {
-    'straight': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m-5 5l5-5 5 5"/></svg>',
-    'left': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 10L5 6l4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 6h8a6 6 0 016 6v7"/></svg>',
-    'right': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4-4-4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M19 6h-8a6 6 0 00-6 6v7"/></svg>'
-  };
+  let passengers = [];
+  let boulders = [];
 
   const BOULDER_SVG = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-    <!-- Boulder 1 -->
     <path d="M 20 60 Q 30 30 50 50 Q 70 70 40 75 Q 15 70 20 60 Z" fill="#64748b" stroke="#475569" stroke-width="2"/>
-    <!-- Boulder 2 -->
     <path d="M 40 55 Q 50 20 70 40 Q 80 65 60 70 Q 30 65 40 55 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-    <!-- Boulder 3 -->
     <path d="M 10 50 Q 20 20 40 35 Q 30 60 15 55 Z" fill="#475569" stroke="#334155" stroke-width="2"/>
   </svg>`;
 
@@ -89,9 +62,110 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.appendChild(cell);
   }
 
-  // Setup Level
+  // --- BLOCKLY SETUP ---
+  
+  // Custom Blocks
+  Blockly.Blocks['move_straight'] = {
+    init: function() {
+      this.appendDummyInput().appendField("Move Forward ⬆️");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+    }
+  };
+  
+  Blockly.Blocks['turn_left'] = {
+    init: function() {
+      this.appendDummyInput().appendField("Turn Left ⬅️");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+    }
+  };
+  
+  Blockly.Blocks['turn_right'] = {
+    init: function() {
+      this.appendDummyInput().appendField("Turn Right ➡️");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+    }
+  };
+
+  Blockly.Blocks['play_sound'] = {
+    init: function() {
+      this.appendDummyInput().appendField("Whistle 🚂🎵");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(330);
+    }
+  };
+
+  // Inject Blockly Workspace
+  const blocklyDiv = document.getElementById('blocklyDiv');
+  const workspace = Blockly.inject(blocklyDiv, {
+    toolbox: document.getElementById('toolbox'),
+    scrollbars: true,
+    trashcan: true
+  });
+
+  // Handle window resize for Blockly
+  window.addEventListener('resize', () => {
+    Blockly.svgResize(workspace);
+  });
+
+  // Extract commands from Blockly workspace using manual AST traversal
+  function generateCommandsFromWorkspace() {
+    let cmds = [];
+    const topBlocks = workspace.getTopBlocks(true);
+    
+    function traverse(blocks) {
+      for (let block of blocks) {
+        if (block.type === 'move_straight') cmds.push('straight');
+        else if (block.type === 'turn_left') cmds.push('left');
+        else if (block.type === 'turn_right') cmds.push('right');
+        else if (block.type === 'play_sound') cmds.push('sound');
+        else if (block.type === 'controls_repeat_ext') {
+          let timesInput = block.getInputTargetBlock('TIMES');
+          let times = 0;
+          if (timesInput && timesInput.type === 'math_number') {
+            times = parseInt(timesInput.getFieldValue('NUM'), 10);
+          }
+          let statementBlock = block.getInputTargetBlock('DO');
+          if (statementBlock) {
+             let loopBlocks = [];
+             let curr = statementBlock;
+             while(curr) {
+                loopBlocks.push(curr);
+                curr = curr.getNextBlock();
+             }
+             for (let i = 0; i < times; i++) {
+                traverse(loopBlocks);
+             }
+          }
+        }
+      }
+    }
+    
+    // We only traverse the first sequence if there are multiple detached blocks,
+    // or we can traverse all. Let's traverse all top blocks.
+    for (let topBlock of topBlocks) {
+       let seq = [];
+       let curr = topBlock;
+       while(curr) {
+         seq.push(curr);
+         curr = curr.getNextBlock();
+       }
+       traverse(seq);
+    }
+    
+    return cmds;
+  }
+
+  // --- GAME LOGIC ---
+
   function setupLevel() {
-    trainState = { x: 0, y: 4, dir: 0, rotation: 0 };
+    trainState = { x: 0, y: GRID_SIZE - 1, dir: 0, rotation: 0 };
     updateTrainTransform(0);
     trainEl.classList.remove('error');
 
@@ -100,8 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     passengers = [];
     boulders = [];
 
-    // Add passengers from global level data
-    const levelData = window.LEVELS.normal[level] || [];
+    const levelData = window.LEVELS.advanced[level] || [];
     levelData.forEach(item => {
       const type = item.type || 'station';
       if (type === 'station') {
@@ -116,19 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const p = document.createElement('div');
     p.className = 'passenger';
     p.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-      <!-- Platform -->
       <rect x="4" y="24" width="40" height="6" rx="2" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
-      <!-- Main Building -->
       <rect x="8" y="12" width="32" height="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-      <!-- Roof -->
       <path d="M 4 12 L 24 2 L 44 12 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5" stroke-linejoin="round"/>
-      <!-- Clock -->
       <circle cx="24" cy="8" r="2.5" fill="#ffffff" stroke="#991b1b" stroke-width="1"/>
       <line x1="24" y1="8" x2="24" y2="6.5" stroke="#991b1b" stroke-width="0.5"/>
       <line x1="24" y1="8" x2="25.5" y2="8" stroke="#991b1b" stroke-width="0.5"/>
-      <!-- Door -->
       <rect x="20" y="16" width="8" height="8" rx="1" fill="#78350f"/>
-      <!-- Windows -->
       <rect x="12" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
       <rect x="31" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
     </svg>`;
@@ -139,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addBoulder(x, y) {
     const b = document.createElement('div');
-    b.className = 'passenger boulder'; // reuse passenger class for positioning
+    b.className = 'passenger boulder'; 
     b.innerHTML = BOULDER_SVG;
     b.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
     passengerLayer.appendChild(b);
@@ -171,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function animateTrain(startState, endState, cmd, durationMs) {
     return new Promise(resolve => {
-      trainEl.style.transition = 'none'; // Disable CSS transitions for JS animation
+      trainEl.style.transition = 'none'; 
       const trainSize = CELL_SIZE * TRAIN_SIZE_MULT;
       const startAbs = getAbsPos(startState.x, startState.y, startState.dir);
       const endAbs = getAbsPos(endState.x, endState.y, endState.dir);
@@ -209,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let t = elapsed / durationMs;
         if (t > 1) t = 1;
 
-        // ease-in-out curve
         const pt = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
         let curX, curY;
@@ -232,134 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function simulateQueueTo(targetIndex) {
-    if (isPlaying) return;
-    setupLevel(); // Reset everything
-
-    const allItems = queueDisplay.querySelectorAll('.queue-item');
-    allItems.forEach(item => {
-      item.classList.remove('executed');
-      item.classList.remove('active');
-    });
-
-    for (let i = 0; i <= targetIndex; i++) {
-      if (i >= queue.length) break;
-      const cmd = queue[i];
-
-      // Spawn track at CURRENT position
-      spawnTrack(trainState.x, trainState.y, trainState.rotation, cmd);
-
-      let nextX = trainState.x;
-      let nextY = trainState.y;
-      let nextDir = trainState.dir;
-      let nextRotation = trainState.rotation;
-
-      if (cmd === 'left') {
-        nextDir = (trainState.dir + 3) % 4;
-        nextRotation -= 90;
-      } else if (cmd === 'right') {
-        nextDir = (trainState.dir + 1) % 4;
-        nextRotation += 90;
-      }
-
-      if (nextDir === 0) nextY -= 1;
-      else if (nextDir === 1) nextX += 1;
-      else if (nextDir === 2) nextY += 1;
-      else if (nextDir === 3) nextX -= 1;
-
-      trainState.x = nextX;
-      trainState.y = nextY;
-      trainState.dir = nextDir;
-      trainState.rotation = nextRotation;
-
-      if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-        showError("Derailment! Out of rails!");
-        trainEl.classList.add('error');
-        updateQueueActive(i);
-        updateTrainTransform(0);
-        return; // STOP simulation
-      }
-
-      if (boulders.some(b => b.x === nextX && b.y === nextY)) {
-        showError("Crashed into boulders! 💥");
-        trainEl.classList.add('error');
-        updateQueueActive(i);
-        updateTrainTransform(0);
-        return; // STOP simulation
-      }
-
-      checkPassengers();
-      if (allItems[i]) allItems[i].classList.add('executed');
-    }
-
-    updateQueueActive(targetIndex);
-    updateTrainTransform(0);
-  }
-
-  // Queue logic
-  function addToQueue(cmd) {
-    if (isPlaying) return;
-    queue.push(cmd);
-
-    const q = document.createElement('div');
-    q.className = 'queue-item';
-    q.innerHTML = ICONS[cmd];
-    
-    const delBtn = document.createElement('span');
-    delBtn.className = 'delete-x';
-    delBtn.innerHTML = '×';
-    delBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // prevent simulateQueueTo
-      const currentItems = Array.from(queueDisplay.querySelectorAll('.queue-item'));
-      const idx = currentItems.indexOf(q);
-      if (idx > -1) {
-        queue.splice(idx, 1);
-        q.remove();
-        // Re-simulate to the item before the deleted one
-        simulateQueueTo(idx - 1);
-      }
-    });
-    q.appendChild(delBtn);
-    
-    q.addEventListener('click', () => {
-      const currentItems = Array.from(queueDisplay.querySelectorAll('.queue-item'));
-      const idx = currentItems.indexOf(q);
-      simulateQueueTo(idx);
-    });
-    
-    queueDisplay.appendChild(q);
-    queueDisplay.scrollLeft = queueDisplay.scrollWidth;
-  }
-
-  function clearQueue() {
-    if (isPlaying) return;
-    queue = [];
-    queueDisplay.innerHTML = '';
-    setupLevel(); // Reset train position
-  }
-
-  function updateQueueActive(activeIndex) {
-    const items = queueDisplay.querySelectorAll('.queue-item');
-    items.forEach((item, idx) => {
-      if (idx === activeIndex) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
-      }
-    });
-
-    if (activeIndex > -1 && items[activeIndex]) {
-      // Scroll the active item into view
-      const itemLeft = items[activeIndex].offsetLeft;
-      queueDisplay.scrollLeft = itemLeft - queueDisplay.clientWidth / 2;
-    }
-  }
-
-  // Delay promise
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
-  // The Game Engine Loop
   async function playQueue() {
+    queue = generateCommandsFromWorkspace();
+    
     if (queue.length === 0 || isPlaying) return;
     isPlaying = true;
     isStopped = false;
@@ -368,119 +311,125 @@ document.addEventListener('DOMContentLoaded', () => {
       audioMove.play().catch(e => console.log('Audio blocked:', e));
     }
 
-    // Reset executed items
-    const allItems = queueDisplay.querySelectorAll('.queue-item');
-    allItems.forEach(item => item.classList.remove('executed'));
-
     setupLevel(); // clean start before execution
-
-    // Slight pause before starting
     await delay(300);
 
     for (let i = 0; i < queue.length; i++) {
       if (isStopped) {
         isStopped = false;
         setupLevel();
-        const allItems = queueDisplay.querySelectorAll('.queue-item');
-        allItems.forEach(item => {
-          item.classList.remove('executed');
-          item.classList.remove('active');
-        });
         break;
       }
       const cmd = queue[i];
-      updateQueueActive(i); // highlight active
 
-      // Spawn track at CURRENT position
+      if (cmd === 'sound') {
+        // Visual hop effect (happens even if sound is off)
+        const pos = getAbsPos(trainState.x, trainState.y, trainState.dir);
+        trainEl.style.transition = 'transform 0.15s ease-out';
+        trainEl.style.transform = `translate(${pos.x}px, ${pos.y - 15}px) rotate(${trainState.rotation}deg)`;
+        setTimeout(() => {
+          if (!isStopped) {
+            trainEl.style.transition = 'transform 0.15s ease-in';
+            trainEl.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${trainState.rotation}deg)`;
+          }
+        }, 150);
+
+        if (isSoundOn && audioWhistle) {
+          audioWhistle.currentTime = 0;
+          await new Promise(resolve => {
+            // Listen for audio end
+            audioWhistle.onended = () => {
+              audioWhistle.onended = null;
+              resolve();
+            };
+            audioWhistle.play().catch(e => {
+              console.log('Audio blocked:', e);
+              resolve();
+            });
+            // Fallback timeout in case onended doesn't fire (e.g. fast speed)
+            setTimeout(() => {
+              audioWhistle.onended = null;
+              resolve();
+            }, isFast ? 800 : 2500); 
+          });
+        } else {
+          await delay(isFast ? 300 : 800);
+        }
+        
+        // Add a tiny gap after sound before moving to next
+        await delay(100);
+        continue;
+      }
+
       spawnTrack(trainState.x, trainState.y, trainState.rotation, cmd);
 
-      // Save old state
       const startState = { x: trainState.x, y: trainState.y, dir: trainState.dir, rotation: trainState.rotation };
 
-      // Calculate next state
       let nextX = trainState.x;
       let nextY = trainState.y;
       let nextDir = trainState.dir;
       let nextRotation = trainState.rotation;
 
-      // Arc mechanics: change direction first
       if (cmd === 'left') {
-        nextDir = (trainState.dir + 3) % 4; // -1 wrapping
+        nextDir = (trainState.dir + 3) % 4; 
         nextRotation -= 90;
       } else if (cmd === 'right') {
         nextDir = (trainState.dir + 1) % 4;
         nextRotation += 90;
       }
 
-      // Move Forward based on NEW direction (creating the arc)
-      if (nextDir === 0) nextY -= 1;      // Up
-      else if (nextDir === 1) nextX += 1; // Right
-      else if (nextDir === 2) nextY += 1; // Down
-      else if (nextDir === 3) nextX -= 1; // Left
+      if (nextDir === 0) nextY -= 1;      
+      else if (nextDir === 1) nextX += 1; 
+      else if (nextDir === 2) nextY += 1; 
+      else if (nextDir === 3) nextX -= 1; 
 
-      // Update state
       trainState.x = nextX;
       trainState.y = nextY;
       trainState.dir = nextDir;
       trainState.rotation = nextRotation;
 
-      // Animate smoothly
       const animSpeed = isFast ? 300 : 1000;
       await animateTrain(startState, trainState, cmd, animSpeed);
 
-      // Boundary check AFTER moving
       if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
         showError("Derailment! Out of rails!");
         trainEl.classList.add('error');
         isPlaying = false;
-        updateQueueActive(-1);
-        return; // STOP execution
+        return; 
       }
 
-      // Boulder check AFTER moving
       if (boulders.some(b => b.x === nextX && b.y === nextY)) {
         showError("Crashed into boulders! 💥");
         trainEl.classList.add('error');
         isPlaying = false;
-        updateQueueActive(-1);
-        return; // STOP execution
+        return; 
       }
 
-      // Collect Passengers
       checkPassengers();
 
-      // Mark as executed
-      const items = queueDisplay.querySelectorAll('.queue-item');
-      if (items[i]) items[i].classList.add('executed');
-
-      // Tiny gap between commands
       const gapSpeed = isFast ? 30 : 100;
       await delay(gapSpeed);
     }
 
-    // Finished loop
-    updateQueueActive(-1);
     isPlaying = false;
     if (audioMove) audioMove.pause();
 
-    // Check if won
     const remaining = passengers.filter(p => !p.collected).length;
     if (remaining === 0) {
       showError("Level completed! 🎉");
       level++;
+      if (level > 6) level = 1; // loop back for now
       levelDisplay.textContent = level;
-      setTimeout(() => clearQueue(), 2000);
+      setTimeout(() => setupLevel(), 2000);
     }
   }
 
   function spawnTrack(x, y, rot, cmd) {
-    // Fade all existing tracks
     const existingTracks = trackLayer.querySelectorAll('.track');
     existingTracks.forEach(tr => tr.classList.add('faded'));
 
     const t = document.createElement('div');
     t.className = 'track';
-    // Offset rotation by 90 so 0 (Up) becomes vertical.
     t.style.transform = `translate(${x * STEP}px, ${y * STEP}px) rotate(${rot + 90}deg)`;
     const tInner = document.createElement('div');
     tInner.className = 'track-inner';
@@ -527,95 +476,78 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // Event Listeners
-  btnStraight.addEventListener('click', () => addToQueue('straight'));
-  btnLeft.addEventListener('click', () => addToQueue('left'));
-  btnRight.addEventListener('click', () => addToQueue('right'));
-  btnClear.addEventListener('click', clearQueue);
   btnPlay.addEventListener('click', playQueue);
-
-  function stopAndReset() {
+  
+  btnStop.addEventListener('click', () => {
     isStopped = true;
     if (audioMove) audioMove.pause();
     if (!isPlaying) {
       setupLevel();
-      const allItems = queueDisplay.querySelectorAll('.queue-item');
-      allItems.forEach(item => {
-        item.classList.remove('executed');
-        item.classList.remove('active');
-      });
     }
-  }
+  });
 
-  btnStop.addEventListener('click', stopAndReset);
+  btnClear.addEventListener('click', () => {
+    workspace.clear();
+  });
 
   // Settings Event Listeners
-  btnSettings.addEventListener('click', () => settingsModal.classList.add('show'));
-  btnCloseSettings.addEventListener('click', () => settingsModal.classList.remove('show'));
+  if (btnSettings) {
+    btnSettings.addEventListener('click', () => settingsModal.classList.add('show'));
+    btnCloseSettings.addEventListener('click', () => settingsModal.classList.remove('show'));
 
-  btnTurtle.addEventListener('click', () => {
-    isFast = false;
-    btnTurtle.classList.add('active');
-    btnHare.classList.remove('active');
-  });
+    btnTurtle.addEventListener('click', () => {
+      isFast = false;
+      btnTurtle.classList.add('active');
+      btnHare.classList.remove('active');
+    });
 
-  btnHare.addEventListener('click', () => {
-    isFast = true;
-    btnHare.classList.add('active');
-    btnTurtle.classList.remove('active');
-  });
+    btnHare.addEventListener('click', () => {
+      isFast = true;
+      btnHare.classList.add('active');
+      btnTurtle.classList.remove('active');
+    });
 
-  btnSoundOff.addEventListener('click', () => {
-    isSoundOn = false;
-    btnSoundOff.classList.add('active');
-    btnSoundOn.classList.remove('active');
-    audioTrack.pause();
-    audioTrack.currentTime = 0;
-    if (audioMove) audioMove.pause();
-  });
+    btnSoundOff.addEventListener('click', () => {
+      isSoundOn = false;
+      btnSoundOff.classList.add('active');
+      btnSoundOn.classList.remove('active');
+      const audioTrack = document.getElementById('audioTrack');
+      if (audioTrack) {
+        audioTrack.pause();
+        audioTrack.currentTime = 0;
+      }
+      if (audioMove) audioMove.pause();
+    });
 
-  btnSoundOn.addEventListener('click', () => {
-    isSoundOn = true;
-    btnSoundOn.classList.add('active');
-    btnSoundOff.classList.remove('active');
-    audioTrack.play().catch(e => console.log('Audio playback blocked:', e));
-  });
+    btnSoundOn.addEventListener('click', () => {
+      isSoundOn = true;
+      btnSoundOn.classList.add('active');
+      btnSoundOff.classList.remove('active');
+      const audioTrack = document.getElementById('audioTrack');
+      if (audioTrack) {
+        audioTrack.play().catch(e => console.log('Audio playback blocked:', e));
+      }
+    });
 
-  btnDeleteSingleOff.addEventListener('click', () => {
-    isDeleteSingleOn = false;
-    btnDeleteSingleOff.classList.add('active');
-    btnDeleteSingleOn.classList.remove('active');
-    document.body.classList.remove('delete-single-mode');
-  });
+    const levelBtns = document.querySelectorAll('.edit-level-btn');
+    levelBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        level = parseInt(e.target.dataset.level, 10);
+        levelDisplay.textContent = level;
+        settingsModal.classList.remove('show');
+        workspace.clear();
+        setupLevel();
+      });
+    });
+  }
 
-  btnDeleteSingleOn.addEventListener('click', () => {
-    isDeleteSingleOn = true;
-    btnDeleteSingleOn.classList.add('active');
-    btnDeleteSingleOff.classList.remove('active');
-    document.body.classList.add('delete-single-mode');
+  window.addEventListener('reloadAdvancedLevel', () => {
+    setupLevel();
   });
 
   // Init
   setupLevel();
-
-  // Responsive Scaling Logic
-  const gameContainer = document.querySelector('.game-container');
-  function adjustScale() {
-    // Determine the minimum width and height needed by the game container un-scaled
-    const minWidth = 480;  // 416 board + padding
-    const minHeight = 650; // header + board + controls + padding
-
-    const padding = 20; // safe area margin
-    const scaleX = window.innerWidth / (minWidth + padding);
-    const scaleY = window.innerHeight / (minHeight + padding);
-    let scale = Math.min(scaleX, scaleY, 1); // Scale down if needed, but not up above 1
-
-    // Apply transform visually
-    gameContainer.style.transform = `scale(${scale})`;
-  }
-
-  window.addEventListener('resize', adjustScale);
-  // Call once immediately and once slightly later to account for any font/layout shifts
-  adjustScale();
-  setTimeout(adjustScale, 100);
+  
+  // Give blockly a moment to render then resize
+  setTimeout(() => Blockly.svgResize(workspace), 200);
 });

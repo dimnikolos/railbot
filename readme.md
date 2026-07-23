@@ -13,6 +13,7 @@
 * **Visual Execution:** The code becomes the physical path. The train builds the grid route based on the queue.
 * **Interactive Timeline & Single Command Delete:** Players can click on any executed command in the queue to instantly simulate and jump to that exact state in time (scrubbing), making debugging intuitive and visual. A toggleable setting allows deleting individual commands for granular editing without starting over.
 * **In-Game Level Builder:** An intuitive visual grid editor allows players and educators to design custom levels directly in the browser. These levels are saved locally and can include stations and obstacles (boulders).
+* **Advanced Mode (Blockly Integration):** A dedicated 8x8 grid mode that transitions kids to real programming concepts using Blockly puzzles. Supports `for` loops and custom action blocks like sounding the train whistle.
 * **Objective:** Navigate the grid and connect the path to various train stations.
 
 ## 🎨 Design & Immersion

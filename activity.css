@@ -71,6 +71,11 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 2px 10px rgba(255, 255, 255, 0.3);
 }
 
+.board-container-8x8 {
+  width: calc((var(--cell-size) * 8) + (var(--grid-gap) * 7));
+  height: calc((var(--cell-size) * 8) + (var(--grid-gap) * 7));
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(5, var(--cell-size));
@@ -78,6 +83,11 @@ body {
   gap: var(--grid-gap);
   width: 100%;
   height: 100%;
+}
+
+.grid-8x8 {
+  grid-template-columns: repeat(8, var(--cell-size));
+  grid-template-rows: repeat(8, var(--cell-size));
 }
 
 .grid-cell {
@@ -480,4 +490,54 @@ body.delete-single-mode .queue-item.active .delete-x {
   background: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Advanced Layout */
+.advanced-layout {
+  display: flex;
+  flex-direction: row;
+  width: 95vw;
+  height: 90vh;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.advanced-layout .game-panel {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.advanced-layout .blockly-panel {
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 400px;
+  position: relative;
+}
+
+#blocklyDiv {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 1000px) {
+  .advanced-layout {
+    flex-direction: column;
+    align-items: center;
+    height: 95vh;
+  }
+  .advanced-layout .blockly-panel {
+    width: 100%;
+    min-height: 400px;
+  }
 }

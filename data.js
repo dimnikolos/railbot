@@ -8,6 +8,16 @@
     6: []
   };
 
+  const advancedLevels = {
+    1: [{x: 2, y: 2, type: 'station'}, {x: 5, y: 2, type: 'station'}, {x: 7, y: 7, type: 'station'}],
+    2: [{x: 1, y: 1, type: 'station'}, {x: 6, y: 6, type: 'station'}],
+    3: [],
+    4: [],
+    5: [],
+    6: []
+  };
+
+
   function loadLevels() {
     try {
       const saved = localStorage.getItem('railbot_levels');
@@ -18,10 +28,23 @@
       console.error('Error loading levels from localStorage', e);
     }
     // Return a deep copy of defaultLevels
-    return JSON.parse(JSON.stringify(defaultLevels));
+    return {
+      normal: JSON.parse(JSON.stringify(defaultLevels)),
+      advanced: JSON.parse(JSON.stringify(advancedLevels))
+    };
   }
 
-  window.LEVELS = loadLevels();
+  const loadedData = loadLevels();
+  
+  // Backward compatibility: if the old format (just an object of arrays) is found, upgrade it
+  if (loadedData['1'] && Array.isArray(loadedData['1'])) {
+    window.LEVELS = {
+      normal: loadedData,
+      advanced: JSON.parse(JSON.stringify(advancedLevels))
+    };
+  } else {
+    window.LEVELS = loadedData;
+  }
 
   window.saveLevels = function() {
     try {

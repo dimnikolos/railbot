@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editLevelBtns = document.querySelectorAll('.edit-level-btn');
   const levelDisplay = document.getElementById('levelDisplay');
   const blocklyPanel = document.querySelector('.blockly-panel');
+  const btnHeaderBack = document.getElementById('btnHeaderBack');
   
   let isBuilderActive = false;
   let customObjects = [];
@@ -75,6 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  window.addEventListener('levelChanged', (e) => {
+    if (isBuilderActive) {
+      currentBuilderLevel = e.detail;
+      startBuilderMode();
+    }
+  });
+
   if (btnSaveBuilder) {
     btnSaveBuilder.addEventListener('click', () => {
       const hasStation = customObjects.some(obj => obj.type === 'station');
@@ -95,6 +103,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCancelBuilder) {
     btnCancelBuilder.addEventListener('click', () => {
       stopBuilderMode(false);
+    });
+  }
+
+  if (btnHeaderBack) {
+    btnHeaderBack.addEventListener('click', (e) => {
+      if (isBuilderActive) {
+        e.preventDefault();
+        stopBuilderMode(false);
+      }
     });
   }
 

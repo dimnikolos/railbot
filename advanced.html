@@ -8,8 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="activity.css">
   
-  <!-- Blockly Scripts -->
-  <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+  <!-- Horizontal Blocks (ScratchJr style) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 
 <body>
@@ -28,10 +28,22 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
-            <a href="index.html" class="control-btn" style="text-decoration: none; width: auto; padding: 0 12px; font-weight: bold; height: 36px; display: flex; align-items: center;">Back</a>
+            <a href="index.html" id="btnHeaderBack" class="control-btn" style="text-decoration: none; width: auto; padding: 0 12px; font-weight: bold; height: 36px; display: flex; align-items: center;">Back</a>
           </div>
         </div>
-        <div class="level-info" style="margin-top: 8px;">Level <span id="levelDisplay">1</span></div>
+        <div class="level-info" style="margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button id="btnPrevLevel" class="icon-btn" style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Previous Level">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 20px; height: 20px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <span>Level <span id="levelDisplay">1</span></span>
+          <button id="btnNextLevel" class="icon-btn" style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Next Level">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 20px; height: 20px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="board-container board-container-8x8">
@@ -89,33 +101,41 @@
 
     </div>
 
-    <!-- Right Panel: Blockly Workspace -->
-    <div class="blockly-panel">
-      <div id="blocklyDiv"></div>
+    <!-- Right Panel: Horizontal Workspace -->
+    <div class="horizontal-workspace-panel glass">
+      <div class="hw-sequence-wrapper">
+        <div class="hw-sequence-container" id="hwSequenceContainer">
+          <!-- Blocks appear here -->
+        </div>
+        <div class="hw-placeholder" id="hwPlaceholder">Click blocks from the palette to build your program!</div>
+      </div>
+      
+      <div class="hw-palette-container" id="hwPaletteContainer">
+        <!-- Palette categories -->
+        <div class="hw-category hw-category-palette" id="catMovement">
+          <div class="h-block palette-block blue-block" data-type="straight" title="Move Forward">⬆️</div>
+          <div class="h-block palette-block blue-block" data-type="left" title="Turn Left">⬅️</div>
+          <div class="h-block palette-block blue-block" data-type="right" title="Turn Right">➡️</div>
+        </div>
+        <div class="hw-category hw-category-palette" id="catActions">
+          <div class="h-block palette-block pink-block" data-type="sound" title="Whistle">🚂🎵</div>
+        </div>
+        <div class="hw-category hw-category-palette" id="catLoops">
+          <div class="h-block palette-block yellow-block loop-wrapper-block" data-type="loop_wrapper" title="Repeat X Times">
+            <div class="loop-header">🔁 <span class="editable-num" contenteditable="true" spellcheck="false">3</span></div>
+            <div class="loop-body nested-sortable"></div>
+          </div>
+        </div>
+        <div class="hw-category hw-category-palette" id="logicCategory" style="display: none;">
+          <div class="h-block palette-block orange-block loop-wrapper-block" data-type="if_boulder" title="If Boulder Ahead">
+            <div class="loop-header">🪨❓</div>
+            <div class="loop-body nested-sortable"></div>
+          </div>
+        </div>
+      </div>
     </div>
     
   </div>
-
-  <!-- Toolbox XML (Hidden) -->
-  <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-    <category name="Movement" colour="#4C97FF">
-      <block type="move_straight"></block>
-      <block type="turn_left"></block>
-      <block type="turn_right"></block>
-    </category>
-    <category name="Actions" colour="#FF6680">
-      <block type="play_sound"></block>
-    </category>
-    <category name="Loops" colour="#0FBD8C">
-      <block type="controls_repeat_ext">
-        <value name="TIMES">
-          <shadow type="math_number">
-            <field name="NUM">4</field>
-          </shadow>
-        </value>
-      </block>
-    </category>
-  </xml>
 
   <!-- Error / Toast Modal -->
   <div id="toast" class="toast">
@@ -140,6 +160,14 @@
         <div class="toggle-group">
           <button id="btnSoundOff" class="toggle-btn active" title="Off">🔇</button>
           <button id="btnSoundOn" class="toggle-btn" title="On">🔊</button>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <label>Logic Blocks (If/Else):</label>
+        <div class="toggle-group">
+          <button id="btnLogicOff" class="toggle-btn active" title="Off">❌</button>
+          <button id="btnLogicOn" class="toggle-btn" title="On">✅</button>
         </div>
       </div>
 

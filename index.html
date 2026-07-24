@@ -26,8 +26,18 @@
           </svg>
         </button>
       </div>
-      <div class="level-info">
-        Level <span id="levelDisplay">1</span> 
+      <div class="level-info" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <button id="btnPrevLevel" class="icon-btn" style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Previous Level">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 20px; height: 20px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <span>Level <span id="levelDisplay">1</span></span>
+        <button id="btnNextLevel" class="icon-btn" style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Next Level">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 20px; height: 20px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
         <span style="margin: 0 8px;">|</span> 
         <a href="advanced.html" style="color: var(--primary); text-decoration: none; font-weight: bold;">Advanced Mode</a>
       </div>

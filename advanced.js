@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSoundOff = document.getElementById('btnSoundOff');
   const btnSoundOn = document.getElementById('btnSoundOn');
 
+  const btnLogicOff = document.getElementById('btnLogicOff');
+  const btnLogicOn = document.getElementById('btnLogicOn');
+
   // Game State
   let queue = [];
   let isPlaying = false;
@@ -37,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let level = 1;
   let isFast = false;
   let isSoundOn = true;
+  let isLogicOn = false;
 
   // Directions: 0=Up, 1=Right, 2=Down, 3=Left
   let trainState = {
@@ -62,104 +66,132 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.appendChild(cell);
   }
 
-  // --- BLOCKLY SETUP ---
-  
-  // Custom Blocks
-  Blockly.Blocks['move_straight'] = {
-    init: function() {
-      this.appendDummyInput().appendField("Move Forward ⬆️");
-      this.setPreviousStatement(true, null);
-      this.setNextStatement(true, null);
-      this.setColour(230);
-    }
-  };
-  
-  Blockly.Blocks['turn_left'] = {
-    init: function() {
-      this.appendDummyInput().appendField("Turn Left ⬅️");
-      this.setPreviousStatement(true, null);
-      this.setNextStatement(true, null);
-      this.setColour(230);
-    }
-  };
-  
-  Blockly.Blocks['turn_right'] = {
-    init: function() {
-      this.appendDummyInput().appendField("Turn Right ➡️");
-      this.setPreviousStatement(true, null);
-      this.setNextStatement(true, null);
-      this.setColour(230);
-    }
-  };
+  // --- HORIZONTAL WORKSPACE SETUP ---
+  const hwSequenceContainer = document.getElementById('hwSequenceContainer');
+  const hwPlaceholder = document.getElementById('hwPlaceholder');
+  const paletteCategories = document.querySelectorAll('.hw-category-palette');
+  const logicCategory = document.getElementById('logicCategory');
 
-  Blockly.Blocks['play_sound'] = {
-    init: function() {
-      this.appendDummyInput().appendField("Whistle 🚂🎵");
-      this.setPreviousStatement(true, null);
-      this.setNextStatement(true, null);
-      this.setColour(330);
+  function updatePlaceholder() {
+    const hasBlocks = Array.from(hwSequenceContainer.children).some(child => child.classList.contains('seq-block'));
+    if (!hasBlocks) {
+      hwPlaceholder.style.display = 'block';
+    } else {
+      hwPlaceholder.style.display = 'none';
     }
-  };
+  }
 
-  // Inject Blockly Workspace
-  const blocklyDiv = document.getElementById('blocklyDiv');
-  const workspace = Blockly.inject(blocklyDiv, {
-    toolbox: document.getElementById('toolbox'),
-    scrollbars: true,
-    trashcan: true
+  function clearWorkspace() {
+    Array.from(hwSequenceContainer.children).forEach(child => {
+      if (child.id !== 'hwPlaceholder') child.remove();
+    });
+    updatePlaceholder();
+  }
+
+  // Initialize Sortable on Palette Categories
+  paletteCategories.forEach(category => {
+    new Sortable(category, {
+      group: {
+        name: 'shared',
+        pull: 'clone',
+        put: false
+      },
+      sort: false,
+      animation: 150
+    });
   });
 
-  // Handle window resize for Blockly
-  window.addEventListener('resize', () => {
-    Blockly.svgResize(workspace);
-  });
-
-  // Extract commands from Blockly workspace using manual AST traversal
-  function generateCommandsFromWorkspace() {
-    let cmds = [];
-    const topBlocks = workspace.getTopBlocks(true);
-    
-    function traverse(blocks) {
-      for (let block of blocks) {
-        if (block.type === 'move_straight') cmds.push('straight');
-        else if (block.type === 'turn_left') cmds.push('left');
-        else if (block.type === 'turn_right') cmds.push('right');
-        else if (block.type === 'play_sound') cmds.push('sound');
-        else if (block.type === 'controls_repeat_ext') {
-          let timesInput = block.getInputTargetBlock('TIMES');
-          let times = 0;
-          if (timesInput && timesInput.type === 'math_number') {
-            times = parseInt(timesInput.getFieldValue('NUM'), 10);
-          }
-          let statementBlock = block.getInputTargetBlock('DO');
-          if (statementBlock) {
-             let loopBlocks = [];
-             let curr = statementBlock;
-             while(curr) {
-                loopBlocks.push(curr);
-                curr = curr.getNextBlock();
-             }
-             for (let i = 0; i < times; i++) {
-                traverse(loopBlocks);
-             }
+  // Initialize Sortable on Main Workspace and nested wrappers
+  function initSortable(container) {
+    new Sortable(container, {
+      group: 'shared',
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      filter: '.editable-num',
+      preventOnFilter: false,
+      onAdd: function (evt) {
+        const item = evt.item;
+        item.classList.remove('palette-block');
+        item.classList.add('seq-block');
+        item.removeAttribute('title');
+        
+        // If the item is a loop wrapper, we need to initialize Sortable on its internal container
+        if (item.classList.contains('loop-wrapper-block')) {
+          const innerContainer = item.querySelector('.nested-sortable');
+          if (innerContainer) {
+            initSortable(innerContainer);
           }
         }
-      }
-    }
+        
+        updatePlaceholder();
+      },
+      onRemove: updatePlaceholder,
+      onUpdate: updatePlaceholder
+    });
+  }
+
+  initSortable(hwSequenceContainer);
+
+  // Handle block deletion on click
+  hwSequenceContainer.addEventListener('click', (e) => {
+    // Do not trigger delete if clicking directly on the drop zone empty space or editable number
+    if (e.target.classList.contains('nested-sortable')) return;
+    if (e.target.classList.contains('editable-num')) return;
     
-    // We only traverse the first sequence if there are multiple detached blocks,
-    // or we can traverse all. Let's traverse all top blocks.
-    for (let topBlock of topBlocks) {
-       let seq = [];
-       let curr = topBlock;
-       while(curr) {
-         seq.push(curr);
-         curr = curr.getNextBlock();
+    const block = e.target.closest('.seq-block');
+    if (!block) return;
+    
+    // If it's a loop block, only delete if clicking the header 
+    if (block.classList.contains('loop-wrapper-block')) {
+       if (e.target.classList.contains('loop-header') || e.target === block) {
+         block.remove();
+         updatePlaceholder();
        }
-       traverse(seq);
+    } else {
+       block.remove();
+       updatePlaceholder();
     }
+  });
+
+  // Extract AST from custom horizontal workspace
+  function generateASTFromWorkspace() {
     
-    return cmds;
+    function parseContainer(container) {
+      let nodes = [];
+      const blocks = Array.from(container.children);
+      
+      for (let block of blocks) {
+        if (!block.classList.contains('seq-block')) continue;
+        
+        let type = block.dataset.type;
+        
+        if (type === 'straight') nodes.push({ type: 'straight' });
+        else if (type === 'left') nodes.push({ type: 'left' });
+        else if (type === 'right') nodes.push({ type: 'right' });
+        else if (type === 'sound') nodes.push({ type: 'sound' });
+        else if (type === 'loop_wrapper') {
+          let times = 3; 
+          const numEl = block.querySelector('.editable-num');
+          if (numEl) {
+             const parsed = parseInt(numEl.textContent, 10);
+             if (!isNaN(parsed)) times = parsed;
+          }
+          const innerContainer = block.querySelector('.nested-sortable');
+          let loopBody = innerContainer ? parseContainer(innerContainer) : [];
+          nodes.push({ type: 'loop', times: times, body: loopBody });
+        }
+        else if (type === 'if_boulder') {
+          let condition = 'boulder_ahead';
+          const innerContainer = block.querySelector('.nested-sortable');
+          let thenBranch = innerContainer ? parseContainer(innerContainer) : [];
+          nodes.push({ type: 'if', condition: condition, thenBranch: thenBranch, elseBranch: [] });
+        }
+      }
+      return nodes;
+    }
+
+    return parseContainer(hwSequenceContainer);
   }
 
   // --- GAME LOGIC ---
@@ -301,9 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
   async function playQueue() {
-    queue = generateCommandsFromWorkspace();
+    const ast = generateASTFromWorkspace();
     
-    if (queue.length === 0 || isPlaying) return;
+    if (ast.length === 0 || isPlaying) return;
     isPlaying = true;
     isStopped = false;
 
@@ -314,53 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLevel(); // clean start before execution
     await delay(300);
 
-    for (let i = 0; i < queue.length; i++) {
-      if (isStopped) {
-        isStopped = false;
-        setupLevel();
-        break;
-      }
-      const cmd = queue[i];
-
-      if (cmd === 'sound') {
-        // Visual hop effect (happens even if sound is off)
-        const pos = getAbsPos(trainState.x, trainState.y, trainState.dir);
-        trainEl.style.transition = 'transform 0.15s ease-out';
-        trainEl.style.transform = `translate(${pos.x}px, ${pos.y - 15}px) rotate(${trainState.rotation}deg)`;
-        setTimeout(() => {
-          if (!isStopped) {
-            trainEl.style.transition = 'transform 0.15s ease-in';
-            trainEl.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${trainState.rotation}deg)`;
-          }
-        }, 150);
-
-        if (isSoundOn && audioWhistle) {
-          audioWhistle.currentTime = 0;
-          await new Promise(resolve => {
-            // Listen for audio end
-            audioWhistle.onended = () => {
-              audioWhistle.onended = null;
-              resolve();
-            };
-            audioWhistle.play().catch(e => {
-              console.log('Audio blocked:', e);
-              resolve();
-            });
-            // Fallback timeout in case onended doesn't fire (e.g. fast speed)
-            setTimeout(() => {
-              audioWhistle.onended = null;
-              resolve();
-            }, isFast ? 800 : 2500); 
-          });
-        } else {
-          await delay(isFast ? 300 : 800);
-        }
-        
-        // Add a tiny gap after sound before moving to next
-        await delay(100);
-        continue;
-      }
-
+    async function executeMovement(cmd) {
       spawnTrack(trainState.x, trainState.y, trainState.rotation, cmd);
 
       const startState = { x: trainState.x, y: trainState.y, dir: trainState.dir, rotation: trainState.rotation };
@@ -394,33 +380,104 @@ document.addEventListener('DOMContentLoaded', () => {
       if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
         showError("Derailment! Out of rails!");
         trainEl.classList.add('error');
-        isPlaying = false;
+        isStopped = true;
         return; 
       }
 
       if (boulders.some(b => b.x === nextX && b.y === nextY)) {
         showError("Crashed into boulders! 💥");
         trainEl.classList.add('error');
-        isPlaying = false;
+        isStopped = true;
         return; 
       }
 
       checkPassengers();
-
       const gapSpeed = isFast ? 30 : 100;
       await delay(gapSpeed);
+    }
+
+    async function executeSound() {
+        const pos = getAbsPos(trainState.x, trainState.y, trainState.dir);
+        trainEl.style.transition = 'transform 0.15s ease-out';
+        trainEl.style.transform = `translate(${pos.x}px, ${pos.y - 15}px) rotate(${trainState.rotation}deg)`;
+        setTimeout(() => {
+          if (!isStopped) {
+            trainEl.style.transition = 'transform 0.15s ease-in';
+            trainEl.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${trainState.rotation}deg)`;
+          }
+        }, 150);
+
+        if (isSoundOn && audioWhistle) {
+          audioWhistle.currentTime = 0;
+          await new Promise(resolve => {
+            audioWhistle.onended = () => { audioWhistle.onended = null; resolve(); };
+            audioWhistle.play().catch(e => { console.log('Audio blocked:', e); resolve(); });
+            setTimeout(() => { audioWhistle.onended = null; resolve(); }, isFast ? 800 : 2500); 
+          });
+        } else {
+          await delay(isFast ? 300 : 800);
+        }
+        await delay(100);
+    }
+
+    async function executeNode(node) {
+      if (isStopped) return;
+      
+      if (node.type === 'straight' || node.type === 'left' || node.type === 'right') {
+         await executeMovement(node.type);
+      } else if (node.type === 'sound') {
+         await executeSound();
+      } else if (node.type === 'loop') {
+         for (let i = 0; i < node.times; i++) {
+            if (isStopped) break;
+            for (let child of node.body) {
+               if (isStopped) break;
+               await executeNode(child);
+            }
+         }
+      } else if (node.type === 'if') {
+         let conditionMet = false;
+         if (node.condition === 'boulder_ahead') {
+            conditionMet = checkBoulderAhead();
+         }
+         
+         if (conditionMet) {
+            for (let child of node.thenBranch) {
+               if (isStopped) break;
+               await executeNode(child);
+            }
+         } else if (node.elseBranch && node.elseBranch.length > 0) {
+            for (let child of node.elseBranch) {
+               if (isStopped) break;
+               await executeNode(child);
+            }
+         }
+      }
+    }
+
+    // Run interpreter
+    for (let node of ast) {
+      if (isStopped) break;
+      await executeNode(node);
     }
 
     isPlaying = false;
     if (audioMove) audioMove.pause();
 
-    const remaining = passengers.filter(p => !p.collected).length;
-    if (remaining === 0) {
-      showError("Level completed! 🎉");
-      level++;
-      if (level > 6) level = 1; // loop back for now
-      levelDisplay.textContent = level;
-      setTimeout(() => setupLevel(), 2000);
+    if (isStopped) {
+      isStopped = false;
+      setupLevel();
+    } else {
+      if (!trainEl.classList.contains('error')) {
+        const remaining = passengers.filter(p => !p.collected).length;
+        if (remaining === 0) {
+          showError("Level completed! 🎉");
+          level++;
+          if (level > 6) level = 1;
+          levelDisplay.textContent = level;
+          setTimeout(() => setupLevel(), 2000);
+        }
+      }
     }
   }
 
@@ -487,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnClear.addEventListener('click', () => {
-    workspace.clear();
+    clearWorkspace();
   });
 
   // Settings Event Listeners
@@ -529,16 +586,57 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    if (btnLogicOn) {
+      btnLogicOn.addEventListener('click', () => {
+        isLogicOn = true;
+        btnLogicOn.classList.add('active');
+        btnLogicOff.classList.remove('active');
+        if (logicCategory) logicCategory.style.display = 'flex';
+      });
+    }
+
+    if (btnLogicOff) {
+      btnLogicOff.addEventListener('click', () => {
+        isLogicOn = false;
+        btnLogicOff.classList.add('active');
+        btnLogicOn.classList.remove('active');
+        if (logicCategory) logicCategory.style.display = 'none';
+      });
+    }
+
     const levelBtns = document.querySelectorAll('.edit-level-btn');
     levelBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
         level = parseInt(e.target.dataset.level, 10);
         levelDisplay.textContent = level;
         settingsModal.classList.remove('show');
-        workspace.clear();
+        clearWorkspace();
         setupLevel();
+        window.dispatchEvent(new CustomEvent('levelChanged', { detail: level }));
       });
     });
+
+    const btnPrevLevel = document.getElementById('btnPrevLevel');
+    if (btnPrevLevel) {
+      btnPrevLevel.addEventListener('click', () => {
+        level = level > 1 ? level - 1 : 6;
+        levelDisplay.textContent = level;
+        clearWorkspace();
+        setupLevel();
+        window.dispatchEvent(new CustomEvent('levelChanged', { detail: level }));
+      });
+    }
+
+    const btnNextLevel = document.getElementById('btnNextLevel');
+    if (btnNextLevel) {
+      btnNextLevel.addEventListener('click', () => {
+        level = level < 6 ? level + 1 : 1;
+        levelDisplay.textContent = level;
+        clearWorkspace();
+        setupLevel();
+        window.dispatchEvent(new CustomEvent('levelChanged', { detail: level }));
+      });
+    }
   }
 
   window.addEventListener('reloadAdvancedLevel', () => {
@@ -547,7 +645,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init
   setupLevel();
-  
-  // Give blockly a moment to render then resize
-  setTimeout(() => Blockly.svgResize(workspace), 200);
 });

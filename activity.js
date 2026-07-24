@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     level = lvl;
     levelDisplay.textContent = level;
     stopAndReset(); // this stops any playing and calls setupLevel()
+    window.dispatchEvent(new CustomEvent('levelChanged', { detail: level }));
   };
 
   // Directions: 0=Up, 1=Right, 2=Down, 3=Left
@@ -594,6 +595,22 @@ document.addEventListener('DOMContentLoaded', () => {
     btnDeleteSingleOff.classList.remove('active');
     document.body.classList.add('delete-single-mode');
   });
+
+  const btnPrevLevel = document.getElementById('btnPrevLevel');
+  if (btnPrevLevel) {
+    btnPrevLevel.addEventListener('click', () => {
+      level = level > 1 ? level - 1 : 6;
+      window.setCurrentLevel(level);
+    });
+  }
+
+  const btnNextLevel = document.getElementById('btnNextLevel');
+  if (btnNextLevel) {
+    btnNextLevel.addEventListener('click', () => {
+      level = level < 6 ? level + 1 : 1;
+      window.setCurrentLevel(level);
+    });
+  }
 
   // Init
   setupLevel();

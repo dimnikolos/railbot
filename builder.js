@@ -74,6 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  window.addEventListener('levelChanged', (e) => {
+    if (isBuilderActive) {
+      currentBuilderLevel = e.detail;
+      startBuilderMode();
+    }
+  });
+
   btnSaveBuilder.addEventListener('click', () => {
     // Check if level has at least one station (objective)
     const hasStation = customObjects.some(obj => obj.type === 'station');

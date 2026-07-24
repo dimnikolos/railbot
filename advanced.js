@@ -68,24 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- HORIZONTAL WORKSPACE SETUP ---
   const hwSequenceContainer = document.getElementById('hwSequenceContainer');
-  const hwPlaceholder = document.getElementById('hwPlaceholder');
   const paletteCategories = document.querySelectorAll('.hw-category-palette');
   const logicCategory = document.getElementById('logicCategory');
 
-  function updatePlaceholder() {
-    const hasBlocks = Array.from(hwSequenceContainer.children).some(child => child.classList.contains('seq-block'));
-    if (!hasBlocks) {
-      hwPlaceholder.style.display = 'block';
-    } else {
-      hwPlaceholder.style.display = 'none';
-    }
-  }
-
   function clearWorkspace() {
     Array.from(hwSequenceContainer.children).forEach(child => {
-      if (child.id !== 'hwPlaceholder') child.remove();
+      if (child.id !== 'startBlock') child.remove();
     });
-    updatePlaceholder();
   }
 
   // Initialize Sortable on Palette Categories
@@ -123,11 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             initSortable(innerContainer);
           }
         }
-        
-        updatePlaceholder();
-      },
-      onRemove: updatePlaceholder,
-      onUpdate: updatePlaceholder
+      }
     });
   }
 
@@ -146,11 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (block.classList.contains('loop-wrapper-block')) {
        if (e.target.classList.contains('loop-header') || e.target === block) {
          block.remove();
-         updatePlaceholder();
        }
     } else {
        block.remove();
-       updatePlaceholder();
     }
   });
 
@@ -166,10 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let type = block.dataset.type;
         
-        if (type === 'straight') nodes.push({ type: 'straight' });
-        else if (type === 'left') nodes.push({ type: 'left' });
-        else if (type === 'right') nodes.push({ type: 'right' });
-        else if (type === 'sound') nodes.push({ type: 'sound' });
+        if (type === 'straight') nodes.push({ type: 'straight', el: block });
+        else if (type === 'left') nodes.push({ type: 'left', el: block });
+        else if (type === 'right') nodes.push({ type: 'right', el: block });
+        else if (type === 'sound') nodes.push({ type: 'sound', el: block });
         else if (type === 'loop_wrapper') {
           let times = 3; 
           const numEl = block.querySelector('.editable-num');
@@ -179,13 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           const innerContainer = block.querySelector('.nested-sortable');
           let loopBody = innerContainer ? parseContainer(innerContainer) : [];
-          nodes.push({ type: 'loop', times: times, body: loopBody });
+          nodes.push({ type: 'loop', times: times, body: loopBody, el: block });
         }
         else if (type === 'if_boulder') {
           let condition = 'boulder_ahead';
           const innerContainer = block.querySelector('.nested-sortable');
           let thenBranch = innerContainer ? parseContainer(innerContainer) : [];
-          nodes.push({ type: 'if', condition: condition, thenBranch: thenBranch, elseBranch: [] });
+          nodes.push({ type: 'if', condition: condition, thenBranch: thenBranch, elseBranch: [], el: block });
         }
       }
       return nodes;
@@ -423,6 +406,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function executeNode(node) {
       if (isStopped) return;
       
+      if (node.el) node.el.classList.add('executing');
+
       if (node.type === 'straight' || node.type === 'left' || node.type === 'right') {
          await executeMovement(node.type);
       } else if (node.type === 'sound') {
@@ -453,9 +438,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
          }
       }
+
+      if (node.el) node.el.classList.remove('executing');
     }
 
     // Run interpreter
+    function stopProgram() {
+      isStopped = true;
+      isPlaying = false;
+      btnPlay.style.display = 'flex';
+      btnStop.style.display = 'none';
+      if (audioMove) audioMove.pause();
+      
+      // Clean up any left-over execution highlights
+      document.querySelectorAll('.executing').forEach(el => el.classList.remove('executing'));
+      
+      setupLevel();
+    }
     for (let node of ast) {
       if (isStopped) break;
       await executeNode(node);

@@ -539,7 +539,7 @@ body.delete-single-mode .queue-item.active .delete-x {
 .hw-sequence-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0px;
   align-items: center;
   align-content: flex-start;
   min-height: 100px;
@@ -578,7 +578,7 @@ body.delete-single-mode .queue-item.active .delete-x {
 
 /* Horizontal Blocks (ScratchJr style) */
 .h-block {
-  width: 60px;
+  width: 80px; /* 4:3 ratio based on 60px height */
   height: 60px;
   border-radius: 12px;
   display: flex;
@@ -593,6 +593,7 @@ body.delete-single-mode .queue-item.active .delete-x {
   position: relative;
   flex-shrink: 0;
   color: white;
+  box-sizing: border-box; /* ensure padding doesn't affect total width if added */
 }
 
 .h-block:active {
@@ -605,22 +606,70 @@ body.delete-single-mode .queue-item.active .delete-x {
 }
 
 .palette-block {
-  width: 50px;
-  height: 50px;
-  font-size: 1.5rem;
+  width: 60px; /* 4:3 ratio based on 45px height */
+  height: 45px;
+  font-size: 1.3rem;
 }
 
-/* Block Colors */
-.blue-block { background: #4C97FF; border: 2px solid #3373CC; }
-.pink-block { background: #FF6680; border: 2px solid #FF3355; }
-.green-block { background: #0FBD8C; border: 2px solid #0A8A66; }
-.orange-block { background: #FFAB19; border: 2px solid #CC8814; }
-.yellow-block { background: #FFD500; border: 2px solid #CCAA00; }
+/* Block Colors - Flat design for clip-path puzzles */
+.blue-block { background: #4C97FF; color: white; }
+.pink-block { background: #FF6680; color: white; }
+.green-block { background: #0FBD8C; color: white; }
+.orange-block { background: #FFAB19; color: white; }
+.yellow-block { background: #FFD500; color: #333; }
+
+/* Puzzle Shape for all blocks (normal and loop) */
+.h-block:not(#startBlock) {
+  clip-path: polygon(
+    0% 0%, 
+    calc(100% - 14px) 0%,
+    calc(100% - 14px) calc(50% - 12px), 
+    100% calc(50% - 12px), 
+    100% calc(50% + 12px), 
+    calc(100% - 14px) calc(50% + 12px), 
+    calc(100% - 14px) 100%, 
+    0% 100%,
+    0% calc(50% + 12px),
+    14px calc(50% + 12px),
+    14px calc(50% - 12px),
+    0% calc(50% - 12px)
+  );
+  border-radius: 0;
+  border: none;
+}
+
+.h-block:not(.loop-wrapper-block) {
+  padding: 0;
+}
+
+/* Start Block Shape (no notch on the left) */
+#startBlock {
+  clip-path: polygon(
+    0% 0%, 
+    calc(100% - 14px) 0%,
+    calc(100% - 14px) calc(50% - 12px), 
+    100% calc(50% - 12px), 
+    100% calc(50% + 12px), 
+    calc(100% - 14px) calc(50% + 12px), 
+    calc(100% - 14px) 100%, 
+    0% 100%
+  );
+  margin-left: 0; /* Starter block doesn't overlap to the left */
+  border-radius: 0;
+  border: none;
+}
+
+/* Execution Highlighting */
+.executing {
+  filter: brightness(1.3) contrast(1.1) drop-shadow(0 0 10px white);
+  transform: scale(1.05);
+  z-index: 100 !important;
+}
 
 /* In-sequence blocks */
 .seq-block {
   animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  margin-left: -5px;
+  margin-left: -14px; /* Perfectly overlap the tab into the notch */
 }
 
 .hw-sequence-container > .seq-block:first-child,
@@ -628,29 +677,11 @@ body.delete-single-mode .queue-item.active .delete-x {
   margin-left: 0;
 }
 
-/* Puzzle tab on the right of standard blocks */
-.h-block:not(.loop-wrapper-block)::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -12px;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 24px;
-  background: inherit;
-  border: inherit;
-  border-left: none;
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-  z-index: -1;
-  box-shadow: 2px 0 2px rgba(0,0,0,0.1);
-}
-
 .seq-block:not(.loop-wrapper-block):hover::before {
   content: "×";
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: 2px;
+  right: 20px;
   background: #ef4444;
   color: white;
   width: 20px;
@@ -662,6 +693,7 @@ body.delete-single-mode .queue-item.active .delete-x {
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   z-index: 10;
+  cursor: pointer;
 }
 
 /* Loop Wrapper Block (ScratchJr C-shape) */
@@ -672,11 +704,9 @@ body.delete-single-mode .queue-item.active .delete-x {
   min-height: 80px;
   display: flex;
   flex-direction: column;
-  padding: 8px;
-  border-radius: 12px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-right: none;
+  padding: 8px 22px 8px 22px; /* 8px standard + 14px for left/right puzzle tabs */
+  border-radius: 0;
+  border: none;
   align-items: stretch;
   justify-content: flex-start;
   position: relative;
@@ -735,11 +765,26 @@ body.delete-single-mode .queue-item.active .delete-x {
   min-width: 80px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px;
+  gap: 0px;
+  padding: 8px 8px 8px 0; /* 0 padding on left so block touches the yellow bracket */
   align-content: flex-start;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
 }
+
+/* Waiting tab inside loop bodies */
+.loop-body::before {
+  content: "";
+  position: absolute;
+  left: 0; /* aligns with the left edge, sitting inside the notch of the first block */
+  top: 26px;  /* 8px (padding) + 18px (notch start on a 60px block) */
+  width: 14px;
+  height: 24px;
+  z-index: 0;
+}
+
+.yellow-block .loop-body::before { background: #FFD500; }
+.orange-block .loop-body::before { background: #FFAB19; }
 
 .palette-block.loop-wrapper-block {
   transform: scale(0.6);

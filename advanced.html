@@ -105,9 +105,12 @@
     <div class="horizontal-workspace-panel glass">
       <div class="hw-sequence-wrapper">
         <div class="hw-sequence-container" id="hwSequenceContainer">
-          <!-- Blocks appear here -->
+          <div class="h-block seq-block green-block" id="startBlock" style="pointer-events: none;" title="Start" data-type="start">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 32px; height: 32px;">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
         </div>
-        <div class="hw-placeholder" id="hwPlaceholder">Click blocks from the palette to build your program!</div>
       </div>
       
       <div class="hw-palette-container" id="hwPaletteContainer">
@@ -118,7 +121,7 @@
           <div class="h-block palette-block blue-block" data-type="right" title="Turn Right">➡️</div>
         </div>
         <div class="hw-category hw-category-palette" id="catActions">
-          <div class="h-block palette-block pink-block" data-type="sound" title="Whistle">🚂🎵</div>
+          <div class="h-block palette-block pink-block" data-type="sound" title="Whistle"><span style="font-size: 1.2rem; display: flex; align-items: center; gap: 2px;">🚂🎵</span></div>
         </div>
         <div class="hw-category hw-category-palette" id="catLoops">
           <div class="h-block palette-block yellow-block loop-wrapper-block" data-type="loop_wrapper" title="Repeat X Times">

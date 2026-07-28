@@ -66,119 +66,209 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.appendChild(cell);
   }
 
-  // --- HORIZONTAL WORKSPACE SETUP ---
-  const hwSequenceContainer = document.getElementById('hwSequenceContainer');
-  const paletteCategories = document.querySelectorAll('.hw-category-palette');
-  const logicCategory = document.getElementById('logicCategory');
+  // --- BLOCKLY WORKSPACE SETUP ---
+  
+  // Custom Blocks Definition
+  Blockly.Blocks['move_straight'] = {
+    init: function() {
+      this.jsonInit({
+        "type": "move_straight",
+        "message0": "⬆️",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Move Forward"
+      });
+    }
+  };
+  
+  Blockly.Blocks['turn_left'] = {
+    init: function() {
+      this.jsonInit({
+        "type": "turn_left",
+        "message0": "⬅️",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Turn Left"
+      });
+    }
+  };
+  
+  Blockly.Blocks['turn_right'] = {
+    init: function() {
+      this.jsonInit({
+        "type": "turn_right",
+        "message0": "➡️",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Turn Right"
+      });
+    }
+  };
+  
+  Blockly.Blocks['action_sound'] = {
+    init: function() {
+      this.jsonInit({
+        "type": "action_sound",
+        "message0": "🚂🎵",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 330,
+        "tooltip": "Whistle"
+      });
+    }
+  };
+
+  Blockly.Blocks['event_start'] = {
+    init: function() {
+      this.jsonInit({
+        "type": "event_start",
+        "message0": "▶️ Start",
+        "nextStatement": null,
+        "colour": 120,
+        "tooltip": "Attach blocks here to play"
+      });
+      this.setDeletable(false);
+    }
+  };
+
+  Blockly.Blocks['controls_if_boulder'] = {
+    init: function() {
+      this.jsonInit({
+        "type": "controls_if_boulder",
+        "message0": "🪨❓",
+        "message1": "%1",
+        "args1": [{"type": "input_statement", "name": "DO"}],
+        "message2": "🚫🪨",
+        "message3": "%1",
+        "args3": [{"type": "input_statement", "name": "ELSE"}],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 30,
+        "tooltip": "If Boulder Ahead, Else"
+      });
+    }
+  };
+
+  const toolboxConfig = {
+    "kind": "categoryToolbox",
+    "contents": [
+      {
+        "kind": "category",
+        "name": "Movement",
+        "colour": "230",
+        "contents": [
+          { "kind": "block", "type": "move_straight" },
+          { "kind": "block", "type": "turn_left" },
+          { "kind": "block", "type": "turn_right" }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Actions",
+        "colour": "330",
+        "contents": [
+          { "kind": "block", "type": "action_sound" }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Loops",
+        "colour": "120",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "controls_repeat_ext",
+            "inputs": {
+              "TIMES": {
+                "shadow": {
+                  "type": "math_number",
+                  "fields": { "NUM": 3 }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Logic",
+        "colour": "30",
+        "hidden": "true",
+        "contents": [
+          { "kind": "block", "type": "controls_if_boulder" }
+        ]
+      }
+    ]
+  };
+
+  const workspace = Blockly.inject('blocklyDiv', {
+    toolbox: toolboxConfig,
+    renderer: 'zelos',         // Εμφάνιση ακριβώς όπως το Scratch
+    horizontalLayout: true,    // Οριζόντια διάταξη
+    toolboxPosition: 'bottom'  // Μπάρα εντολών στο κάτω μέρος
+  });
+
+  function createStartBlock() {
+    const startBlock = workspace.newBlock('event_start');
+    startBlock.initSvg();
+    startBlock.render();
+    startBlock.moveBy(20, 20);
+  }
+  
+  createStartBlock();
 
   function clearWorkspace() {
-    Array.from(hwSequenceContainer.children).forEach(child => {
-      if (child.id !== 'startBlock') child.remove();
-    });
+    workspace.clear();
+    createStartBlock();
   }
 
-  // Initialize Sortable on Palette Categories
-  paletteCategories.forEach(category => {
-    new Sortable(category, {
-      group: {
-        name: 'shared',
-        pull: 'clone',
-        put: false
-      },
-      sort: false,
-      animation: 150,
-      fallbackOnBody: true,
-      swapThreshold: 0.65
-    });
-  });
-
-  // Initialize Sortable on Main Workspace and nested wrappers
-  function initSortable(container) {
-    new Sortable(container, {
-      group: 'shared',
-      animation: 150,
-      ghostClass: 'sortable-ghost',
-      dragClass: 'sortable-drag',
-      filter: '.editable-num',
-      preventOnFilter: false,
-      fallbackOnBody: true,
-      swapThreshold: 0.65,
-      onAdd: function (evt) {
-        const item = evt.item;
-        item.classList.remove('palette-block');
-        item.classList.add('seq-block');
-        item.removeAttribute('title');
-        
-        // If the item is a loop wrapper, we need to initialize Sortable on its internal containers
-        if (item.classList.contains('loop-wrapper-block')) {
-          const innerContainers = item.querySelectorAll('.nested-sortable');
-          innerContainers.forEach(container => initSortable(container));
+  function generateASTFromBlock(block) {
+    let nodes = [];
+    while (block) {
+      if (block.type === 'move_straight') nodes.push({ type: 'straight', el: block.id });
+      else if (block.type === 'turn_left') nodes.push({ type: 'left', el: block.id });
+      else if (block.type === 'turn_right') nodes.push({ type: 'right', el: block.id });
+      else if (block.type === 'action_sound') nodes.push({ type: 'sound', el: block.id });
+      else if (block.type === 'controls_repeat_ext' || block.type === 'controls_repeat') {
+        let times = 3;
+        const timesInput = block.getInputTargetBlock('TIMES');
+        if (timesInput && timesInput.type === 'math_number') {
+          times = parseInt(timesInput.getFieldValue('NUM'), 10) || 3;
         }
+        let bodyBlock = block.getInputTargetBlock('DO');
+        let body = bodyBlock ? generateASTFromBlock(bodyBlock) : [];
+        nodes.push({ type: 'loop', times: times, body: body, el: block.id });
       }
-    });
+      else if (block.type === 'controls_if_boulder') {
+        let thenBlock = block.getInputTargetBlock('DO');
+        let elseBlock = block.getInputTargetBlock('ELSE');
+        let thenBranch = thenBlock ? generateASTFromBlock(thenBlock) : [];
+        let elseBranch = elseBlock ? generateASTFromBlock(elseBlock) : [];
+        nodes.push({ type: 'if', condition: 'boulder_ahead', thenBranch: thenBranch, elseBranch: elseBranch, el: block.id });
+      }
+      block = block.getNextBlock();
+    }
+    return nodes;
   }
 
-  initSortable(hwSequenceContainer);
-
-  // Handle block deletion on click
-  hwSequenceContainer.addEventListener('click', (e) => {
-    // Do not trigger delete if clicking directly on the drop zone empty space or editable number
-    if (e.target.classList.contains('nested-sortable')) return;
-    if (e.target.classList.contains('editable-num')) return;
-    
-    const block = e.target.closest('.seq-block');
-    if (!block) return;
-    
-    // If it's a loop block, only delete if clicking the header 
-    if (block.classList.contains('loop-wrapper-block')) {
-       if (e.target.classList.contains('loop-header') || e.target === block) {
-         block.remove();
-       }
-    } else {
-       block.remove();
-    }
-  });
-
-  // Extract AST from custom horizontal workspace
   function generateASTFromWorkspace() {
+    let ast = [];
+    const topBlocks = workspace.getTopBlocks(false);
+    const startBlock = topBlocks.find(b => b.type === 'event_start');
     
-    function parseContainer(container) {
-      let nodes = [];
-      const blocks = Array.from(container.children);
-      
-      for (let block of blocks) {
-        if (!block.classList.contains('seq-block')) continue;
-        
-        let type = block.dataset.type;
-        
-        if (type === 'straight') nodes.push({ type: 'straight', el: block });
-        else if (type === 'left') nodes.push({ type: 'left', el: block });
-        else if (type === 'right') nodes.push({ type: 'right', el: block });
-        else if (type === 'sound') nodes.push({ type: 'sound', el: block });
-        else if (type === 'loop_wrapper') {
-          let times = 3; 
-          const numEl = block.querySelector('.editable-num');
-          if (numEl) {
-             const parsed = parseInt(numEl.textContent, 10);
-             if (!isNaN(parsed)) times = parsed;
-          }
-          const innerContainer = block.querySelector('.nested-sortable');
-          let loopBody = innerContainer ? parseContainer(innerContainer) : [];
-          nodes.push({ type: 'loop', times: times, body: loopBody, el: block });
-        }
-        else if (type === 'if_boulder') {
-          let condition = 'boulder_ahead';
-          const ifContainer = block.querySelector('.if-branch') || block.querySelectorAll('.nested-sortable')[0];
-          const elseContainer = block.querySelector('.else-branch') || block.querySelectorAll('.nested-sortable')[1];
-          let thenBranch = ifContainer ? parseContainer(ifContainer) : [];
-          let elseBranch = elseContainer ? parseContainer(elseContainer) : [];
-          nodes.push({ type: 'if', condition: condition, thenBranch: thenBranch, elseBranch: elseBranch, el: block });
-        }
-      }
-      return nodes;
+    if (startBlock) {
+      ast = generateASTFromBlock(startBlock.getNextBlock());
     }
+    return ast;
+  }
 
-    return parseContainer(hwSequenceContainer);
+  // Update Toolbox for logic category visibility
+  function updateToolboxVisibility() {
+    toolboxConfig.contents[3].hidden = !isLogicOn ? "true" : "false";
+    workspace.updateToolbox(toolboxConfig);
   }
 
   // --- GAME LOGIC ---
@@ -420,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function executeNode(node) {
       if (isStopped) return;
       
-      if (node.el) node.el.classList.add('executing');
+      if (node.el) workspace.highlightBlock(node.el, true);
 
       if (node.type === 'straight' || node.type === 'left' || node.type === 'right') {
          await executeMovement(node.type);
@@ -453,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
          }
       }
 
-      if (node.el) node.el.classList.remove('executing');
+      if (node.el) workspace.highlightBlock(node.el, false);
     }
 
     // Run interpreter
@@ -465,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (audioMove) audioMove.pause();
       
       // Clean up any left-over execution highlights
-      document.querySelectorAll('.executing').forEach(el => el.classList.remove('executing'));
+      workspace.highlightBlock(null);
       
       setupLevel();
     }
@@ -604,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isLogicOn = true;
         btnLogicOn.classList.add('active');
         btnLogicOff.classList.remove('active');
-        if (logicCategory) logicCategory.style.display = 'flex';
+        updateToolboxVisibility();
       });
     }
 
@@ -613,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isLogicOn = false;
         btnLogicOff.classList.add('active');
         btnLogicOn.classList.remove('active');
-        if (logicCategory) logicCategory.style.display = 'none';
+        updateToolboxVisibility();
       });
     }
 
@@ -673,6 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     advancedLayout.style.transform = `scale(${scale})`;
     advancedLayout.style.transformOrigin = 'top center';
+    Blockly.svgResize(workspace);
   }
   
   window.addEventListener('resize', adjustScale);

@@ -508,7 +508,7 @@ body.delete-single-mode .queue-item.active .delete-x {
   margin: auto;
   padding: 16px 0;
   gap: 20px;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
 }
 
@@ -523,6 +523,7 @@ body.delete-single-mode .queue-item.active .delete-x {
 .advanced-layout .horizontal-workspace-panel {
   flex: 1 1 auto;
   height: 100%;
+  min-height: 700px;
   min-width: 400px;
   display: flex;
   flex-direction: column;
@@ -531,6 +532,24 @@ body.delete-single-mode .queue-item.active .delete-x {
   border: 1px solid rgba(0,0,0,0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   background: rgba(255, 255, 255, 0.85);
+  position: relative;
+}
+
+/* Faint train watermark over Blockly (Top Right) */
+.horizontal-workspace-panel::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 150px;
+  height: 150px;
+  background-image: url('top_down_train2.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 100;
 }
 
 /* Sequence Area */

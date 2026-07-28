@@ -86,7 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         put: false
       },
       sort: false,
-      animation: 150
+      animation: 150,
+      fallbackOnBody: true,
+      swapThreshold: 0.65
     });
   });
 
@@ -99,18 +101,18 @@ document.addEventListener('DOMContentLoaded', () => {
       dragClass: 'sortable-drag',
       filter: '.editable-num',
       preventOnFilter: false,
+      fallbackOnBody: true,
+      swapThreshold: 0.65,
       onAdd: function (evt) {
         const item = evt.item;
         item.classList.remove('palette-block');
         item.classList.add('seq-block');
         item.removeAttribute('title');
         
-        // If the item is a loop wrapper, we need to initialize Sortable on its internal container
+        // If the item is a loop wrapper, we need to initialize Sortable on its internal containers
         if (item.classList.contains('loop-wrapper-block')) {
-          const innerContainer = item.querySelector('.nested-sortable');
-          if (innerContainer) {
-            initSortable(innerContainer);
-          }
+          const innerContainers = item.querySelectorAll('.nested-sortable');
+          innerContainers.forEach(container => initSortable(container));
         }
       }
     });
@@ -166,9 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (type === 'if_boulder') {
           let condition = 'boulder_ahead';
-          const innerContainer = block.querySelector('.nested-sortable');
-          let thenBranch = innerContainer ? parseContainer(innerContainer) : [];
-          nodes.push({ type: 'if', condition: condition, thenBranch: thenBranch, elseBranch: [], el: block });
+          const ifContainer = block.querySelector('.if-branch') || block.querySelectorAll('.nested-sortable')[0];
+          const elseContainer = block.querySelector('.else-branch') || block.querySelectorAll('.nested-sortable')[1];
+          let thenBranch = ifContainer ? parseContainer(ifContainer) : [];
+          let elseBranch = elseContainer ? parseContainer(elseContainer) : [];
+          nodes.push({ type: 'if', condition: condition, thenBranch: thenBranch, elseBranch: elseBranch, el: block });
         }
       }
       return nodes;
@@ -401,6 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
           await delay(isFast ? 300 : 800);
         }
         await delay(100);
+    }
+
+    function checkBoulderAhead() {
+      let nextX = trainState.x;
+      let nextY = trainState.y;
+      if (trainState.dir === 0) nextY -= 1;
+      else if (trainState.dir === 1) nextX += 1;
+      else if (trainState.dir === 2) nextY += 1;
+      else if (trainState.dir === 3) nextX -= 1;
+      return boulders.some(b => b.x === nextX && b.y === nextY);
     }
 
     async function executeNode(node) {
@@ -644,4 +658,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init
   setupLevel();
+
+  // Responsive Scaling Logic
+  const advancedLayout = document.querySelector('.advanced-layout');
+  function adjustScale() {
+    if (!advancedLayout) return;
+    const minWidth = 1150; // approximate width needed for both panels unscaled
+    const minHeight = 900; // increased from 750 to account for 8x8 grid (668px) + header + controls + padding
+    
+    const padding = 60; // visual margin (empty space) around the layout
+    const scaleX = window.innerWidth / (minWidth + padding);
+    const scaleY = window.innerHeight / (minHeight + padding);
+    let scale = Math.min(scaleX, scaleY, 1);
+    
+    advancedLayout.style.transform = `scale(${scale})`;
+    advancedLayout.style.transformOrigin = 'top center';
+  }
+  
+  window.addEventListener('resize', adjustScale);
+  adjustScale();
+  setTimeout(adjustScale, 100);
 });

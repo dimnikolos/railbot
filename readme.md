@@ -1,27 +1,43 @@
-# Railbot 🚂
+<p align="center">
+  <img src="icon.png" alt="Railbot Logo" width="128">
+</p>
 
-> A visual, track-building programming game for early learners (Ages 5-7).
+<h1 align="center">Railbot 🚂</h1>
 
-[![Play Web Demo](https://img.shields.io/badge/Play-Web_Demo-success)](#) *(https://dimnikolos.github.io/railbot)*
+<p align="center">
+  <em>A visual, track-building programming game for early learners (Ages 5-7).</em>
+</p>
+
+<p align="center">
+  <a href="https://dimnikolos.github.io/railbot">
+    <img src="https://img.shields.io/badge/Play-Web_Demo-success?style=for-the-badge&logo=play" alt="Play Web Demo">
+  </a>
+</p>
 
 ## 📖 Overview
+
 **Railbot** reimagines block-based coding for young children. Instead of using abstract directional arrows on a pre-built maze, children program a train using literal track pieces. As the train executes the sequence, it dynamically lays down the tracks in real-time.
 
 ## ✨ Core Mechanics
+
 * **Track-Based Commands:** Programming blocks are the actual tracks ('Straight', 'Turn Left', 'Turn Right').
 * **Ego-Centric Navigation:** Turns are calculated from the train's perspective, teaching mental rotation and spatial awareness.
-* **Visual Execution:** The code becomes the physical path. The train builds the grid route based on the queue.
-* **Interactive Timeline & Single Command Delete:** Players can click on any executed command in the queue to instantly simulate and jump to that exact state in time (scrubbing), making debugging intuitive and visual. A toggleable setting allows deleting individual commands for granular editing without starting over.
+* **Visual Execution:** The code becomes the physical path. The train builds the grid route based on the commands.
+* **Interactive Timeline & Single Command Delete (Basic Mode):** Players can click on any executed command in the queue to instantly simulate and jump to that exact state in time (scrubbing), making debugging intuitive and visual. A toggleable setting allows deleting individual commands for granular editing without starting over.
 * **In-Game Level Builder:** An intuitive visual grid editor allows players and educators to design custom levels directly in the browser. Access it by opening the Settings menu and clicking on a level number. These levels are saved locally and can include stations and obstacles (boulders).
-* **Settings & Navigation:** A dedicated settings menu allows toggling train speed, background music/sounds, and single command delete mode. Players can easily navigate between levels using the arrows at the top of the screen.
-* **Advanced Mode (Blockly Integration):** A dedicated 8x8 grid mode that transitions kids to real programming concepts using Blockly puzzles. Supports `for` loops and custom action blocks like sounding the train whistle.
+* **Unified UI & Navigation:** A sleek, unified Global Navbar provides seamless switching between Basic and Advanced modes, maintaining a pixel-perfect, responsive layout at all times.
+* **Basic Mode (3-Panel Layout):** Features a clear visual separation between the Command Palette, the Program Queue (Timeline), and the Game Grid.
+* **Advanced Mode (Blockly Integration):** A dedicated 8x8 grid mode that transitions kids to real programming concepts using Blockly puzzles. Supports `for` loops, conditional logic (`if/else` for avoiding boulders), and custom action blocks like sounding the train whistle.
+* **Responsive Layout:** The game area automatically scales to fit different screen sizes flawlessly, centered on the screen.
 * **Objective:** Navigate the grid and connect the path to various train stations.
 
 ## 🎨 Design & Immersion
+
 * **Clean UI:** Glassmorphism and minimalist grid lines prevent visual clutter, focusing attention on the puzzle.
 * **Audio Feedback:** Authentic train chugging and whistling sounds respond to the player's code execution.
 
 ## 🧠 Educational Value
+
 Tailored specifically for the cognitive load of Kindergarten and 1st-grade students:
 * **Algorithmic Sequencing:** Encourages planning a logical sequence of steps before execution.
 * **Spatial Orientation:** Transitions learners from an external viewpoint to an ego-centric perspective.

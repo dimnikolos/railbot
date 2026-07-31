@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogicOn = document.getElementById('btnLogicOn');
 
   // Game State
-  let queue = [];
   let isPlaying = false;
   let isStopped = false;
   let level = 1;
@@ -206,9 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const workspace = Blockly.inject('blocklyDiv', {
     toolbox: toolboxConfig,
-    renderer: 'zelos',         // Εμφάνιση ακριβώς όπως το Scratch
-    horizontalLayout: true,    // Οριζόντια διάταξη
-    toolboxPosition: 'bottom'  // Μπάρα εντολών στο κάτω μέρος
+    renderer: 'zelos',
+    horizontalLayout: false,    // Κάθετη διάταξη toolbox
+    toolboxPosition: 'start'    // Toolbox στα αριστερά
   });
 
   function createStartBlock() {
@@ -409,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
-  async function playQueue() {
+  async function runProgram() {
     const ast = generateASTFromWorkspace();
     
     if (ast.length === 0 || isPlaying) return;
@@ -636,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  btnPlay.addEventListener('click', playQueue);
+  btnPlay.addEventListener('click', runProgram);
   
   btnStop.addEventListener('click', () => {
     isStopped = true;
@@ -750,23 +749,24 @@ document.addEventListener('DOMContentLoaded', () => {
   setupLevel();
 
   // Responsive Scaling Logic
-  const advancedLayout = document.querySelector('.advanced-layout');
+  const gameContainer = document.querySelector('.game-container');
   function adjustScale() {
-    if (!advancedLayout) return;
-    const minWidth = 1150; // approximate width needed for both panels unscaled
-    const minHeight = 900; // increased from 750 to account for 8x8 grid (668px) + header + controls + padding
+    if (!gameContainer) return;
+    const minWidth = 1408; // 3-panel horizontal layout logic
+    const minHeight = 900;
     
-    const padding = 60; // visual margin (empty space) around the layout
+    const padding = 60;
     const scaleX = window.innerWidth / (minWidth + padding);
     const scaleY = window.innerHeight / (minHeight + padding);
     let scale = Math.min(scaleX, scaleY, 1);
     
-    advancedLayout.style.transform = `scale(${scale})`;
-    advancedLayout.style.transformOrigin = 'top center';
+    gameContainer.style.transform = `translateX(-50%) scale(${scale})`;
+    gameContainer.style.transformOrigin = 'top center';
     Blockly.svgResize(workspace);
   }
   
   window.addEventListener('resize', adjustScale);
   adjustScale();
+  setTimeout(adjustScale, 100);
   setTimeout(adjustScale, 100);
 });

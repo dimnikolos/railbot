@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancelBuilder = document.getElementById('btnCancelBuilder');
   const editLevelBtns = document.querySelectorAll('.edit-level-btn');
   const levelDisplay = document.getElementById('levelDisplay');
-  const blocklyPanel = document.querySelector('.blockly-panel');
+  const blocklyDiv = document.getElementById('blocklyDiv');
   const btnHeaderBack = document.getElementById('btnHeaderBack');
   
   let isBuilderActive = false;
@@ -41,9 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (settingsModal) settingsModal.classList.remove('show');
     if (boardContainer) boardContainer.classList.add('builder-mode');
     if (playControls) playControls.style.display = 'none';
-    if (builderControls) builderControls.style.display = 'block';
+    if (builderControls) builderControls.style.display = 'flex';
     if (levelDisplay) levelDisplay.textContent = currentBuilderLevel;
-    if (blocklyPanel) blocklyPanel.style.display = 'none';
+    if (blocklyDiv) blocklyDiv.style.visibility = 'hidden';
     
     // Clear and load existing level objects
     if (passengerLayer) passengerLayer.innerHTML = '';
@@ -63,9 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // UI changes
     if (boardContainer) boardContainer.classList.remove('builder-mode');
-    if (playControls) playControls.style.display = 'block';
+    if (playControls) playControls.style.display = 'flex';
     if (builderControls) builderControls.style.display = 'none';
-    if (blocklyPanel) blocklyPanel.style.display = 'block';
+    if (blocklyDiv) blocklyDiv.style.visibility = 'visible';
     
     if (saved) {
       showToast(`Level ${currentBuilderLevel} saved!`, true);

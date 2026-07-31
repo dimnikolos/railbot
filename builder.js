@@ -37,7 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsModal.classList.remove('show');
     boardContainer.classList.add('builder-mode');
     playControls.style.display = 'none';
-    builderControls.style.display = 'block';
+    builderControls.style.display = 'flex';
+    
+    // Hide middle panel and expand left panel
+    const panelMiddle = document.querySelector('.panel-middle');
+    if (panelMiddle) panelMiddle.style.display = 'none';
+    const panelLeft = document.querySelector('.panel-left');
+    if (panelLeft) {
+      panelLeft.style.flex = '1';
+      panelLeft.style.justifyContent = 'center';
+    }
     levelDisplay.textContent = currentBuilderLevel;
     
     // Clear and load existing level objects
@@ -58,8 +67,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // UI changes
     boardContainer.classList.remove('builder-mode');
-    playControls.style.display = 'block';
+    playControls.style.display = 'flex';
     builderControls.style.display = 'none';
+    
+    // Restore middle panel
+    const panelMiddle = document.querySelector('.panel-middle');
+    if (panelMiddle) panelMiddle.style.display = '';
+    const panelLeft = document.querySelector('.panel-left');
+    if (panelLeft) {
+      panelLeft.style.flex = '';
+      panelLeft.style.justifyContent = '';
+    }
     
     if (saved) {
       showToast(`Level ${currentBuilderLevel} saved!`, true);

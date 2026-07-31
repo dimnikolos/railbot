@@ -619,16 +619,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameContainer = document.querySelector('.game-container');
   function adjustScale() {
     // Determine the minimum width and height needed by the game container un-scaled
-    const minWidth = 480;  // 416 board + padding
-    const minHeight = 650; // header + board + controls + padding
+    const minWidth = 1408; // Unified app width
+    const minHeight = 900; // Unified app height
 
-    const padding = 20; // safe area margin
+    const padding = 60; // safe area margin
     const scaleX = window.innerWidth / (minWidth + padding);
     const scaleY = window.innerHeight / (minHeight + padding);
     let scale = Math.min(scaleX, scaleY, 1); // Scale down if needed, but not up above 1
 
     // Apply transform visually
-    gameContainer.style.transform = `scale(${scale})`;
+    gameContainer.style.transform = `translateX(-50%) scale(${scale})`;
+    gameContainer.style.transformOrigin = 'top center';
   }
 
   window.addEventListener('resize', adjustScale);

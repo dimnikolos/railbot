@@ -6,17 +6,17 @@
 
 Το project είναι ένα παιχνίδι όπου ο παίκτης προγραμματίζει την κίνηση ενός τρένου σε ένα πλέγμα (grid) για να επισκεφτεί σταθμούς.
 
-- **`index.html`**: Περιέχει το DOM, το UI του παιχνιδιού (grid, layers για το τρένο και τους σταθμούς, καθώς και τα κουμπιά ελέγχου) και τα audio tags για τους ήχους.
-- **`activity.css`**: Περιέχει τα styles για το UI (Glassmorphism, Grid Layouts, Control Panels).
-- **`activity.js`**: Είναι το κύριο αρχείο λογικής του παιχνιδιού (game logic). Διαχειρίζεται:
+- **`index.html`**: Περιέχει το DOM και το ανανεωμένο UI του παιχνιδιού (3-panel layout: Commands, Program Queue, Grid). Περιλαμβάνει επίσης το ενιαίο Global Navbar (εναλλαγή Basic/Advanced), audio tags, καθώς και scripts για Google Analytics και Cookie Consent.
+- **`activity.css`**: Περιέχει τα styles για το UI (Glassmorphism, Grid Layouts, Control Panels, `.layout-3-panel`, `.app-navbar`).
+- **`activity.js`**: Είναι το κύριο αρχείο λογικής του παιχνιδιού (game logic) για το Basic Mode. Διαχειρίζεται:
   - Το state (θέση, κατεύθυνση, rotation του τρένου).
   - Το animation της κίνησης του τρένου και το dynamic track generation.
   - Το σύστημα ουράς εντολών (queue) με **interactive scrubbing** (κλικ σε εντολή) και **single command delete**.
-  - Την κίνηση του τρένου και τους κανόνες.
   - Αναπαραγωγή ήχων (train_move.mp3, train_whistle.mp3, background_music.mp3).
+  - Το responsive scaling (`adjustScale`), το οποίο είναι πλέον κεντραρισμένο (`translateX(-50%)`) με βάση ελάχιστου πλάτους `1408px` για pixel-perfect ταύτιση με το Advanced mode.
 - **`data.js`**: Διαχειρίζεται την αποθήκευση και φόρτωση των δεδομένων των επιπέδων μέσω `localStorage`.
 - **`builder.js`**: Υλοποιεί το In-Game Level Builder (επεξεργασία επιπέδων) που επιτρέπει τη δημιουργία σταθμών και εμποδίων απευθείας στο UI.
-- **`advanced.html` & `advanced.js`**: Υλοποιούν το **Advanced Mode**, το οποίο χρησιμοποιεί ένα μεγαλύτερο πλέγμα (8x8) και ενσωματώνει τη βιβλιοθήκη **Blockly** για προγραμματισμό με τουβλάκια (συμπεριλαμβανομένων επαναλήψεων και actions όπως σφύριγμα τρένου). Η εκτέλεση του ήχου περιμένει να ολοκληρωθεί μέσω Promise (onended event).
+- **`advanced.html` & `advanced.js`**: Υλοποιούν το **Advanced Mode**, το οποίο χρησιμοποιεί ένα μεγαλύτερο πλέγμα (8x8) και ενσωματώνει τη βιβλιοθήκη **Blockly** για προγραμματισμό με τουβλάκια (η παλιά custom λογική drag and drop έχει αφαιρεθεί πλήρως για πιο καθαρό κώδικα). Μοιράζεται το ίδιο Global Navbar (`.app-navbar`) και κώδικα scaling (`1408px`) με το Basic mode, εξασφαλίζοντας απόλυτα ομαλή μετάβαση. Υποστηρίζει επαναλήψεις (loops), λογικές συνθήκες (If/Else για εμπόδια) και actions (σφύριγμα τρένου).
 - **`advanced_builder.js`**: Υλοποιεί τον Level Builder αποκλειστικά προσαρμοσμένο για το 8x8 πλέγμα του Advanced Mode.
 
 ## Βασική Λογική (`activity.js`)

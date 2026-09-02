@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="activity.css">
-  
+
   <!-- Blockly -->
   <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
   <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
@@ -16,16 +16,16 @@
 </head>
 
 <body>
-  
+
   <div class="game-container">
-    
+
     <!-- Global Header -->
     <div class="app-navbar">
       <div class="navbar-left">
         <img src="icon.png" alt="Railbot Logo" style="width: 48px; height: 48px; object-fit: contain;">
         <h1>Railbot</h1>
       </div>
-      
+
       <div class="navbar-center-tabs">
         <a href="index.html" class="mode-tab">Basic</a>
         <a href="advanced.html" class="mode-tab active">Advanced</a>
@@ -33,19 +33,23 @@
 
       <div class="navbar-right">
         <div class="level-info">
-          <button id="btnPrevLevel" class="icon-btn" style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Previous Level">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 20px; height: 20px;">
+          <button id="btnPrevLevel" class="icon-btn"
+            style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Previous Level">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              style="width: 20px; height: 20px;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <span>Level <span id="levelDisplay">1</span></span>
-          <button id="btnNextLevel" class="icon-btn" style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Next Level">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 20px; height: 20px;">
+          <button id="btnNextLevel" class="icon-btn"
+            style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Next Level">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              style="width: 20px; height: 20px;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
-        
+
         <button class="icon-btn" id="btnSettings" title="Ρυθμίσεις"
           style="background: none; border: none; cursor: pointer; color: var(--primary);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -59,13 +63,15 @@
     </div>
 
     <div class="layout-3-panel">
-      
+
       <!-- Left & Middle Panel: Blockly Workspace -->
-      <div class="horizontal-workspace-panel glass" style="padding: 0; overflow: hidden; position: relative; flex: 1; min-width: 600px; min-height: 700px;">
+      <div class="horizontal-workspace-panel glass"
+        style="padding: 0; overflow: hidden; position: relative; flex: 1; min-width: 600px; min-height: 700px;">
         <div id="blocklyDiv" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-        
+
         <!-- Builder Controls Overlay -->
-        <div id="builderControls" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--glass-bg); z-index: 20; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center;">
+        <div id="builderControls"
+          style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--glass-bg); z-index: 20; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center;">
           <h2 style="margin: 0; color: var(--primary); font-size: 2rem;">Builder Mode</h2>
           <p style="font-size: 1.1rem; margin: 0; color: #64748b;">Click the grid to place or remove objects.</p>
           <div style="display: flex; flex-direction: column; width: 100%; max-width: 300px; gap: 16px;">
@@ -77,30 +83,31 @@
         </div>
 
         <!-- Action Buttons overlaid in the bottom right of the Blockly workspace -->
-        <div id="playControls" class="controls-panel" style="position: absolute; bottom: 16px; right: 16px; width: auto; display: flex; flex-direction: row; gap: 8px; background: rgba(255,255,255,0.85); border-radius: 12px; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); backdrop-filter: blur(4px); z-index: 10;">
-            <button class="control-btn action-btn play-btn" id="btnPlay" title="Run Code">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </button>
-            <button class="control-btn action-btn stop-btn" id="btnStop" title="Stop">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" />
-              </svg>
-            </button>
-            <div class="separator"></div>
-            <button class="control-btn action-btn delete-btn" id="btnClear" title="Clear Blocks">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+        <div id="playControls" class="controls-panel"
+          style="position: absolute; bottom: 16px; right: 16px; width: auto; display: flex; flex-direction: row; gap: 8px; background: rgba(255,255,255,0.85); border-radius: 12px; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); backdrop-filter: blur(4px); z-index: 10;">
+          <button class="control-btn action-btn play-btn" id="btnPlay" title="Run Code">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+          <button class="control-btn action-btn stop-btn" id="btnStop" title="Stop">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" />
+            </svg>
+          </button>
+          <div class="separator"></div>
+          <button class="control-btn action-btn delete-btn" id="btnClear" title="Clear Blocks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
       </div>
 
       <!-- Right Panel: Game Board -->
-      <div class="panel-right">
-
+      <div class="panel-right" style="position: relative;">
+        <button id="btnToggleLabels" class="btn-toggle-labels" title="Toggle Coordinates">A1</button>
         <div class="board-container board-container-8x8">
           <div id="grid" class="grid grid-8x8">
             <!-- 8x8 Grid cells will be generated by JS -->
@@ -113,73 +120,76 @@
           <img src="top_down_train2.png" id="train" class="train" alt="Train">
         </div>
       </div>
-      
+
     </div>
 
-  <!-- Error / Toast Modal -->
-  <div id="toast" class="toast">
-    <span id="toastMsg">Error!</span>
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="modal">
-    <div class="modal-content glass">
-      <h2 style="margin-top: 0; color: var(--primary);">Settings</h2>
-
-      <div class="setting-item">
-        <label>Speed (Train):</label>
-        <div class="toggle-group">
-          <button id="btnTurtle" class="toggle-btn active" title="Slow">🐢</button>
-          <button id="btnHare" class="toggle-btn" title="Fast">🐇</button>
-        </div>
-      </div>
-
-      <div class="setting-item">
-        <label>Sound:</label>
-        <div class="toggle-group">
-          <button id="btnSoundOff" class="toggle-btn active" title="Off">🔇</button>
-          <button id="btnSoundOn" class="toggle-btn" title="On">🔊</button>
-        </div>
-      </div>
-
-      <div class="setting-item">
-        <label>Logic Blocks (If/Else):</label>
-        <div class="toggle-group">
-          <button id="btnLogicOff" class="toggle-btn active" title="Off">❌</button>
-          <button id="btnLogicOn" class="toggle-btn" title="On">✅</button>
-        </div>
-      </div>
-
-      <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px;">
-        <label>Levels:</label>
-        <div class="levels-grid">
-          <button class="level-box edit-level-btn" data-level="1">1</button>
-          <button class="level-box edit-level-btn" data-level="2">2</button>
-          <button class="level-box edit-level-btn" data-level="3">3</button>
-          <button class="level-box edit-level-btn" data-level="4">4</button>
-          <button class="level-box edit-level-btn" data-level="5">5</button>
-          <button class="level-box edit-level-btn" data-level="6">6</button>
-        </div>
-      </div>
-
-      <button id="btnCloseSettings" class="control-btn"
-        style="margin-top: 16px; width: 100%; height: 40px; font-weight: 600;">Close</button>
+    <!-- Error / Toast Modal -->
+    <div id="toast" class="toast">
+      <span id="toastMsg">Error!</span>
     </div>
-  </div>
 
-  <audio id="audioTrack" loop>
-    <source src="background_music.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="audioMove" loop>
-    <source src="train_move.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="audioWhistle">
-    <source src="train_whistle.mp3" type="audio/mpeg">
-  </audio>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content glass">
+        <h2 style="margin-top: 0; color: var(--primary);">Settings</h2>
 
-  <script src="data.js"></script>
-  <script src="advanced.js"></script>
-  <script src="advanced_builder.js"></script>
+        <div class="setting-item">
+          <label>Speed (Train):</label>
+          <div class="toggle-group">
+            <button id="btnTurtle" class="toggle-btn active" title="Slow">🐢</button>
+            <button id="btnHare" class="toggle-btn" title="Fast">🐇</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <label>Sound:</label>
+          <div class="toggle-group">
+            <button id="btnSoundOff" class="toggle-btn active" title="Off">🔇</button>
+            <button id="btnSoundOn" class="toggle-btn" title="On">🔊</button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <label>Logic Blocks (If/Else):</label>
+          <div class="toggle-group">
+            <button id="btnLogicOff" class="toggle-btn active" title="Off">❌</button>
+            <button id="btnLogicOn" class="toggle-btn" title="On">✅</button>
+          </div>
+        </div>
+
+        <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px;">
+          <label>Levels:</label>
+          <div class="levels-grid">
+            <button class="level-box edit-level-btn" data-level="1">1</button>
+            <button class="level-box edit-level-btn" data-level="2">2</button>
+            <button class="level-box edit-level-btn" data-level="3">3</button>
+            <button class="level-box edit-level-btn" data-level="4">4</button>
+            <button class="level-box edit-level-btn" data-level="5">5</button>
+            <button class="level-box edit-level-btn" data-level="6">6</button>
+          </div>
+          <button id="btnResetLevels" class="control-btn"
+            style="margin-top: 12px; width: 100%; height: 36px; background: var(--boulder); color: #fff;">Reset
+            Levels</button>
+        </div>
+
+        <button id="btnCloseSettings" class="control-btn"
+          style="margin-top: 16px; width: 100%; height: 40px; font-weight: 600;">Close</button>
+      </div>
+    </div>
+
+    <audio id="audioTrack" loop>
+      <source src="background_music.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audioMove" loop>
+      <source src="train_move.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audioWhistle">
+      <source src="train_whistle.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="data.js"></script>
+    <script src="advanced.js"></script>
+    <script src="advanced_builder.js"></script>
 
 </body>
 

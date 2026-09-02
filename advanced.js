@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnPlay = document.getElementById('btnPlay');
   const btnStop = document.getElementById('btnStop');
   const btnClear = document.getElementById('btnClear');
-  
+
   const audioMove = document.getElementById('audioMove');
   const audioWhistle = document.getElementById('audioWhistle');
 
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     x: 0,
     y: 7, // Bottom left of 8x8 is (0,7)
     dir: 0, // facing up
-    rotation: 0 
+    rotation: 0
   };
 
   let passengers = [];
@@ -66,10 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- BLOCKLY WORKSPACE SETUP ---
-  
+
   // Custom Blocks Definition
   Blockly.Blocks['move_straight'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "type": "move_straight",
         "message0": "⬆️",
@@ -80,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   };
-  
+
   Blockly.Blocks['turn_left'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "type": "turn_left",
         "message0": "⬅️",
@@ -93,9 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   };
-  
+
   Blockly.Blocks['turn_right'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "type": "turn_right",
         "message0": "➡️",
@@ -106,9 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   };
-  
+
   Blockly.Blocks['action_sound'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "type": "action_sound",
         "message0": "🚂🎵",
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   Blockly.Blocks['event_start'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "type": "event_start",
         "message0": "▶️ Start",
@@ -134,15 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   Blockly.Blocks['controls_if_boulder'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "type": "controls_if_boulder",
         "message0": "🪨❓",
         "message1": "%1",
-        "args1": [{"type": "input_statement", "name": "DO"}],
+        "args1": [{ "type": "input_statement", "name": "DO" }],
         "message2": "🚫🪨",
         "message3": "%1",
-        "args3": [{"type": "input_statement", "name": "ELSE"}],
+        "args3": [{ "type": "input_statement", "name": "ELSE" }],
         "previousStatement": null,
         "nextStatement": null,
         "colour": 30,
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startBlock.render();
     startBlock.moveBy(20, 20);
   }
-  
+
   createStartBlock();
 
   function clearWorkspace() {
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let ast = [];
     const topBlocks = workspace.getTopBlocks(false);
     const startBlock = topBlocks.find(b => b.type === 'event_start');
-    
+
     if (startBlock) {
       ast = generateASTFromBlock(startBlock.getNextBlock());
     }
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addBoulder(x, y) {
     const b = document.createElement('div');
-    b.className = 'passenger boulder'; 
+    b.className = 'passenger boulder';
     b.innerHTML = BOULDER_SVG;
     b.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
     passengerLayer.appendChild(b);
@@ -325,16 +325,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const trainSize = CELL_SIZE * TRAIN_SIZE_MULT;
     const halfSize = trainSize / 2;
     const center = CELL_SIZE / 2;
-    
+
     let cx, cy;
     if (dir === 0) { cx = center; cy = CELL_SIZE; }
     else if (dir === 1) { cx = 0; cy = center; }
     else if (dir === 2) { cx = center; cy = 0; }
     else if (dir === 3) { cx = CELL_SIZE; cy = center; }
-    
+
     const offsetX = cx - halfSize;
     const offsetY = cy - halfSize;
-    
+
     return { x: x * STEP + offsetX, y: y * STEP + offsetY };
   }
 
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function animateTrain(startState, endState, cmd, durationMs) {
     return new Promise(resolve => {
-      trainEl.style.transition = 'none'; 
+      trainEl.style.transition = 'none';
       const trainSize = CELL_SIZE * TRAIN_SIZE_MULT;
       const startAbs = getAbsPos(startState.x, startState.y, startState.dir);
       const endAbs = getAbsPos(endState.x, endState.y, endState.dir);
@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function runProgram() {
     const ast = generateASTFromWorkspace();
-    
+
     if (ast.length === 0 || isPlaying) return;
     isPlaying = true;
     isStopped = false;
@@ -433,17 +433,17 @@ document.addEventListener('DOMContentLoaded', () => {
       let nextRotation = trainState.rotation;
 
       if (cmd === 'left') {
-        nextDir = (trainState.dir + 3) % 4; 
+        nextDir = (trainState.dir + 3) % 4;
         nextRotation -= 90;
       } else if (cmd === 'right') {
         nextDir = (trainState.dir + 1) % 4;
         nextRotation += 90;
       }
 
-      if (nextDir === 0) nextY -= 1;      
-      else if (nextDir === 1) nextX += 1; 
-      else if (nextDir === 2) nextY += 1; 
-      else if (nextDir === 3) nextX -= 1; 
+      if (nextDir === 0) nextY -= 1;
+      else if (nextDir === 1) nextX += 1;
+      else if (nextDir === 2) nextY += 1;
+      else if (nextDir === 3) nextX -= 1;
 
       trainState.x = nextX;
       trainState.y = nextY;
@@ -457,14 +457,14 @@ document.addEventListener('DOMContentLoaded', () => {
         showError("Derailment! Out of rails!");
         trainEl.classList.add('error');
         isStopped = true;
-        return; 
+        return;
       }
 
       if (boulders.some(b => b.x === nextX && b.y === nextY)) {
         showError("Crashed into boulders! 💥");
         trainEl.classList.add('error');
         isStopped = true;
-        return; 
+        return;
       }
 
       checkPassengers();
@@ -473,27 +473,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function executeSound() {
-        const pos = getAbsPos(trainState.x, trainState.y, trainState.dir);
-        trainEl.style.transition = 'transform 0.15s ease-out';
-        trainEl.style.transform = `translate(${pos.x}px, ${pos.y - 15}px) rotate(${trainState.rotation}deg)`;
-        setTimeout(() => {
-          if (!isStopped) {
-            trainEl.style.transition = 'transform 0.15s ease-in';
-            trainEl.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${trainState.rotation}deg)`;
-          }
-        }, 150);
-
-        if (isSoundOn && audioWhistle) {
-          audioWhistle.currentTime = 0;
-          await new Promise(resolve => {
-            audioWhistle.onended = () => { audioWhistle.onended = null; resolve(); };
-            audioWhistle.play().catch(e => { console.log('Audio blocked:', e); resolve(); });
-            setTimeout(() => { audioWhistle.onended = null; resolve(); }, isFast ? 800 : 2500); 
-          });
-        } else {
-          await delay(isFast ? 300 : 800);
+      const pos = getAbsPos(trainState.x, trainState.y, trainState.dir);
+      trainEl.style.transition = 'transform 0.15s ease-out';
+      trainEl.style.transform = `translate(${pos.x}px, ${pos.y - 15}px) rotate(${trainState.rotation}deg)`;
+      setTimeout(() => {
+        if (!isStopped) {
+          trainEl.style.transition = 'transform 0.15s ease-in';
+          trainEl.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${trainState.rotation}deg)`;
         }
-        await delay(100);
+      }, 150);
+
+      if (isSoundOn && audioWhistle) {
+        audioWhistle.currentTime = 0;
+        await new Promise(resolve => {
+          audioWhistle.onended = () => { audioWhistle.onended = null; resolve(); };
+          audioWhistle.play().catch(e => { console.log('Audio blocked:', e); resolve(); });
+          setTimeout(() => { audioWhistle.onended = null; resolve(); }, isFast ? 800 : 2500);
+        });
+      } else {
+        await delay(isFast ? 300 : 800);
+      }
+      await delay(100);
     }
 
     function checkBoulderAhead() {
@@ -508,38 +508,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function executeNode(node) {
       if (isStopped) return;
-      
+
       if (node.el) workspace.highlightBlock(node.el, true);
 
       if (node.type === 'straight' || node.type === 'left' || node.type === 'right') {
-         await executeMovement(node.type);
+        await executeMovement(node.type);
       } else if (node.type === 'sound') {
-         await executeSound();
+        await executeSound();
       } else if (node.type === 'loop') {
-         for (let i = 0; i < node.times; i++) {
+        for (let i = 0; i < node.times; i++) {
+          if (isStopped) break;
+          for (let child of node.body) {
             if (isStopped) break;
-            for (let child of node.body) {
-               if (isStopped) break;
-               await executeNode(child);
-            }
-         }
+            await executeNode(child);
+          }
+        }
       } else if (node.type === 'if') {
-         let conditionMet = false;
-         if (node.condition === 'boulder_ahead') {
-            conditionMet = checkBoulderAhead();
-         }
-         
-         if (conditionMet) {
-            for (let child of node.thenBranch) {
-               if (isStopped) break;
-               await executeNode(child);
-            }
-         } else if (node.elseBranch && node.elseBranch.length > 0) {
-            for (let child of node.elseBranch) {
-               if (isStopped) break;
-               await executeNode(child);
-            }
-         }
+        let conditionMet = false;
+        if (node.condition === 'boulder_ahead') {
+          conditionMet = checkBoulderAhead();
+        }
+
+        if (conditionMet) {
+          for (let child of node.thenBranch) {
+            if (isStopped) break;
+            await executeNode(child);
+          }
+        } else if (node.elseBranch && node.elseBranch.length > 0) {
+          for (let child of node.elseBranch) {
+            if (isStopped) break;
+            await executeNode(child);
+          }
+        }
       }
 
       if (node.el) workspace.highlightBlock(node.el, false);
@@ -552,10 +552,10 @@ document.addEventListener('DOMContentLoaded', () => {
       btnPlay.style.display = 'flex';
       btnStop.style.display = 'none';
       if (audioMove) audioMove.pause();
-      
+
       // Clean up any left-over execution highlights
       workspace.highlightBlock(null);
-      
+
       setupLevel();
     }
     for (let node of ast) {
@@ -574,8 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const remaining = passengers.filter(p => !p.collected).length;
         if (remaining === 0) {
           showError("Level completed! 🎉");
-          level++;
-          if (level > 6) level = 1;
+          level = (level + 1) % 6;
           levelDisplay.textContent = level;
           setTimeout(() => setupLevel(), 2000);
         }
@@ -636,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnPlay.addEventListener('click', runProgram);
-  
+
   btnStop.addEventListener('click', () => {
     isStopped = true;
     if (audioMove) audioMove.pause();
@@ -653,6 +652,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSettings) {
     btnSettings.addEventListener('click', () => settingsModal.classList.add('show'));
     btnCloseSettings.addEventListener('click', () => settingsModal.classList.remove('show'));
+
+    const btnResetLevels = document.getElementById('btnResetLevels');
+    if (btnResetLevels) {
+      btnResetLevels.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset levels to their initial settings?')) {
+          if (window.resetLevelsToDefault) {
+            window.resetLevelsToDefault();
+            location.reload();
+          }
+        }
+      });
+    }
 
     btnTurtle.addEventListener('click', () => {
       isFast = false;
@@ -745,6 +756,40 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLevel();
   });
 
+  // Coordinates labels
+  const labelLayer = document.createElement('div');
+  labelLayer.id = 'labelLayer';
+  labelLayer.className = 'overlay-layer';
+  labelLayer.style.display = 'none'; // Hidden by default
+  document.querySelector('.board-container').appendChild(labelLayer);
+
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  for (let x = 0; x < GRID_SIZE; x++) {
+    for (let y = 0; y < GRID_SIZE; y++) {
+      const lbl = document.createElement('div');
+      lbl.className = 'grid-coord-label';
+      lbl.style.width = CELL_SIZE + 'px';
+      lbl.style.height = CELL_SIZE + 'px';
+      lbl.style.left = (x * STEP) + 'px';
+      lbl.style.top = (y * STEP) + 'px';
+      lbl.textContent = cols[x] + (GRID_SIZE - y);
+      labelLayer.appendChild(lbl);
+    }
+  }
+
+  const btnToggleLabels = document.getElementById('btnToggleLabels');
+  if (btnToggleLabels) {
+    btnToggleLabels.addEventListener('click', () => {
+      if (labelLayer.style.display === 'none') {
+        labelLayer.style.display = 'block';
+        btnToggleLabels.classList.add('active');
+      } else {
+        labelLayer.style.display = 'none';
+        btnToggleLabels.classList.remove('active');
+      }
+    });
+  }
+
   // Init
   setupLevel();
 
@@ -754,17 +799,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!gameContainer) return;
     const minWidth = 1408; // 3-panel horizontal layout logic
     const minHeight = 900;
-    
+
     const padding = 60;
     const scaleX = window.innerWidth / (minWidth + padding);
     const scaleY = window.innerHeight / (minHeight + padding);
     let scale = Math.min(scaleX, scaleY, 1);
-    
+
     gameContainer.style.transform = `translateX(-50%) scale(${scale})`;
     gameContainer.style.transformOrigin = 'top center';
     Blockly.svgResize(workspace);
   }
-  
+
   window.addEventListener('resize', adjustScale);
   adjustScale();
   setTimeout(adjustScale, 100);

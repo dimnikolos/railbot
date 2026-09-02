@@ -18,7 +18,7 @@ body {
   font-family: 'Inter', sans-serif;
   color: var(--text-main);
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
   position: relative;
 }
 
@@ -89,7 +89,7 @@ body {
 /* Mode Tabs */
 .navbar-center-tabs {
   display: flex;
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   padding: 4px;
   border-radius: 12px;
   gap: 4px;
@@ -105,13 +105,13 @@ body {
 }
 
 .mode-tab:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .mode-tab.active {
   background: white;
   color: var(--primary);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-right {
@@ -283,7 +283,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   display: none;
   z-index: 10;
 }
@@ -572,23 +572,30 @@ body.delete-single-mode .queue-item.active .delete-x {
     padding: 16px 8px;
     gap: 16px;
   }
+
   .controls-panel {
     padding: 12px 8px;
     gap: 12px;
   }
+
   .control-btn {
     width: 44px;
     height: 44px;
   }
+
   .control-btn svg {
     width: 24px;
     height: 24px;
   }
-  .action-btn.play-btn, .action-btn.stop-btn {
+
+  .action-btn.play-btn,
+  .action-btn.stop-btn {
     width: 52px;
     height: 52px;
   }
-  .action-btn.play-btn svg, .action-btn.stop-btn svg {
+
+  .action-btn.play-btn svg,
+  .action-btn.stop-btn svg {
     width: 26px;
     height: 26px;
   }
@@ -604,7 +611,9 @@ body.delete-single-mode .queue-item.active .delete-x {
   width: 100%;
 }
 
-.panel-left, .panel-middle, .panel-right {
+.panel-left,
+.panel-middle,
+.panel-right {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -660,4 +669,44 @@ body.delete-single-mode .queue-item.active .delete-x {
   height: 2px;
   background: rgba(0, 0, 0, 0.1);
   margin: 8px 0;
-}
+}
+
+/* Coordinate Labels Toggle Button */
+.btn-toggle-labels {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: 2px solid #94a3b8;
+  /* slate-400 */
+  border-radius: 8px;
+  font-weight: bold;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #64748b;
+  /* slate-500 */
+  transition: all 0.2s;
+}
+
+.btn-toggle-labels.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Coordinate Labels on the Grid */
+.grid-coord-label {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 6px;
+  font-size: 14px;
+  color: #94a3b8;
+  /* slate-400 (grey) */
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 5;
+}

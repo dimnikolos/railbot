@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isSoundOn = false;
   let isDeleteSingleOn = false;
 
-  window.setCurrentLevel = function(lvl) {
+  window.setCurrentLevel = function (lvl) {
     level = lvl;
     levelDisplay.textContent = level;
     stopAndReset(); // this stops any playing and calls setupLevel()
@@ -151,16 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const trainSize = CELL_SIZE * TRAIN_SIZE_MULT;
     const halfSize = trainSize / 2;
     const center = CELL_SIZE / 2;
-    
+
     let cx, cy;
     if (dir === 0) { cx = center; cy = CELL_SIZE; }
     else if (dir === 1) { cx = 0; cy = center; }
     else if (dir === 2) { cx = center; cy = 0; }
     else if (dir === 3) { cx = CELL_SIZE; cy = center; }
-    
+
     const offsetX = cx - halfSize;
     const offsetY = cy - halfSize;
-    
+
     return { x: x * STEP + offsetX, y: y * STEP + offsetY };
   }
 
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = document.createElement('div');
     q.className = 'queue-item';
     q.innerHTML = ICONS[cmd];
-    
+
     const delBtn = document.createElement('span');
     delBtn.className = 'delete-x';
     delBtn.innerHTML = '×';
@@ -321,13 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     q.appendChild(delBtn);
-    
+
     q.addEventListener('click', () => {
       const currentItems = Array.from(queueDisplay.querySelectorAll('.queue-item'));
       const idx = currentItems.indexOf(q);
       simulateQueueTo(idx);
     });
-    
+
     queueDisplay.appendChild(q);
     queueDisplay.scrollLeft = queueDisplay.scrollWidth;
   }
@@ -554,6 +554,18 @@ document.addEventListener('DOMContentLoaded', () => {
   btnSettings.addEventListener('click', () => settingsModal.classList.add('show'));
   btnCloseSettings.addEventListener('click', () => settingsModal.classList.remove('show'));
 
+  const btnResetLevels = document.getElementById('btnResetLevels');
+  if (btnResetLevels) {
+    btnResetLevels.addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset levels to their initial settings?')) {
+        if (window.resetLevelsToDefault) {
+          window.resetLevelsToDefault();
+          location.reload();
+        }
+      }
+    });
+  }
+
   btnTurtle.addEventListener('click', () => {
     isFast = false;
     btnTurtle.classList.add('active');
@@ -609,6 +621,40 @@ document.addEventListener('DOMContentLoaded', () => {
     btnNextLevel.addEventListener('click', () => {
       level = level < 6 ? level + 1 : 1;
       window.setCurrentLevel(level);
+    });
+  }
+
+  // Coordinates labels
+  const labelLayer = document.createElement('div');
+  labelLayer.id = 'labelLayer';
+  labelLayer.className = 'overlay-layer';
+  labelLayer.style.display = 'none'; // Hidden by default
+  document.querySelector('.board-container').appendChild(labelLayer);
+  
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  for (let x = 0; x < GRID_SIZE; x++) {
+    for (let y = 0; y < GRID_SIZE; y++) {
+      const lbl = document.createElement('div');
+      lbl.className = 'grid-coord-label';
+      lbl.style.width = CELL_SIZE + 'px';
+      lbl.style.height = CELL_SIZE + 'px';
+      lbl.style.left = (x * STEP) + 'px';
+      lbl.style.top = (y * STEP) + 'px';
+      lbl.textContent = cols[x] + (GRID_SIZE - y);
+      labelLayer.appendChild(lbl);
+    }
+  }
+
+  const btnToggleLabels = document.getElementById('btnToggleLabels');
+  if (btnToggleLabels) {
+    btnToggleLabels.addEventListener('click', () => {
+      if (labelLayer.style.display === 'none') {
+        labelLayer.style.display = 'block';
+        btnToggleLabels.classList.add('active');
+      } else {
+        labelLayer.style.display = 'none';
+        btnToggleLabels.classList.remove('active');
+      }
     });
   }
 

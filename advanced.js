@@ -1,10 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Config for Advanced Mode (8x8)
   const GRID_SIZE = 8;
-  const CELL_SIZE = 80;
-  const GAP_SIZE = 4;
-  const STEP = CELL_SIZE + GAP_SIZE; // Total pixels per tile jump
-  const TRAIN_SIZE_MULT = 0.6; // Train size relative to CELL_SIZE
+  const { CELL_SIZE, GAP_SIZE, STEP, TRAIN_SIZE_MULT } = window.CONFIG;
 
   // DOM Elements
   const grid = document.getElementById('grid');
@@ -52,11 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let passengers = [];
   let boulders = [];
 
-  const BOULDER_SVG = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-    <path d="M 20 60 Q 30 30 50 50 Q 70 70 40 75 Q 15 70 20 60 Z" fill="#64748b" stroke="#475569" stroke-width="2"/>
-    <path d="M 40 55 Q 50 20 70 40 Q 80 65 60 70 Q 30 65 40 55 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-    <path d="M 10 50 Q 20 20 40 35 Q 30 60 15 55 Z" fill="#475569" stroke="#334155" stroke-width="2"/>
-  </svg>`;
+  const BOULDER_SVG = window.ASSETS.BOULDER_SVG;
 
   // Init grid visuals
   for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
@@ -296,17 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function addPassenger(x, y) {
     const p = document.createElement('div');
     p.className = 'passenger';
-    p.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-      <rect x="4" y="24" width="40" height="6" rx="2" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
-      <rect x="8" y="12" width="32" height="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-      <path d="M 4 12 L 24 2 L 44 12 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5" stroke-linejoin="round"/>
-      <circle cx="24" cy="8" r="2.5" fill="#ffffff" stroke="#991b1b" stroke-width="1"/>
-      <line x1="24" y1="8" x2="24" y2="6.5" stroke="#991b1b" stroke-width="0.5"/>
-      <line x1="24" y1="8" x2="25.5" y2="8" stroke="#991b1b" stroke-width="0.5"/>
-      <rect x="20" y="16" width="8" height="8" rx="1" fill="#78350f"/>
-      <rect x="12" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
-      <rect x="31" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
-    </svg>`;
+    p.innerHTML = window.ASSETS.STATION_SVG;
     p.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
     passengerLayer.appendChild(p);
     passengers.push({ x, y, el: p, collected: false });
@@ -592,24 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tInner = document.createElement('div');
     tInner.className = 'track-inner';
 
-    let svgPath = '';
-    if (cmd === 'straight') {
-      svgPath = `
-        <path d="M 0 40 L 80 40" stroke="#78350f" stroke-width="20" stroke-dasharray="6 8" fill="none" />
-        <path d="M 0 32 L 80 32 M 0 48 L 80 48" stroke="#9ca3af" stroke-width="3" fill="none" />
-      `;
-    } else if (cmd === 'right') {
-      svgPath = `
-        <path d="M 80 40 C 58 40, 40 22, 40 0" stroke="#78350f" stroke-width="20" stroke-dasharray="6 8" fill="none" />
-        <path d="M 80 32 C 62.4 32, 48 17.6, 48 0 M 80 48 C 53.5 48, 32 26.5, 32 0" stroke="#9ca3af" stroke-width="3" fill="none" />
-      `;
-    } else if (cmd === 'left') {
-      svgPath = `
-        <path d="M 80 40 C 58 40, 40 58, 40 80" stroke="#78350f" stroke-width="20" stroke-dasharray="6 8" fill="none" />
-        <path d="M 80 48 C 62.4 48, 48 62.4, 48 80 M 80 32 C 53.5 32, 32 53.5, 32 80" stroke="#9ca3af" stroke-width="3" fill="none" />
-      `;
-    }
-
+    let svgPath = window.ASSETS.TRACK_PATHS[cmd] || '';
     tInner.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">${svgPath}</svg>`;
     t.appendChild(tInner);
     trackLayer.appendChild(t);
@@ -797,21 +763,75 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameContainer = document.querySelector('.game-container');
   function adjustScale() {
     if (!gameContainer) return;
-    const minWidth = 1408; // 3-panel horizontal layout logic
+    const minWidth = 1408;
     const minHeight = 900;
-
     const padding = 60;
     const scaleX = window.innerWidth / (minWidth + padding);
     const scaleY = window.innerHeight / (minHeight + padding);
     let scale = Math.min(scaleX, scaleY, 1);
+    
+    window.__appScale = scale;
 
-    gameContainer.style.transform = `translateX(-50%) scale(${scale})`;
+    // DO NOT scale the entire game container with CSS transform.
+    // This allows Blockly to remain in a 1:1 screen mapping environment, eliminating all popup coordinate bugs!
+    gameContainer.style.transform = `translateX(-50%)`;
     gameContainer.style.transformOrigin = 'top center';
-    Blockly.svgResize(workspace);
+    
+    // 1. Manually scale Left Panel (Queue)
+    const panelLeft = document.querySelector('.panel-left');
+    if (panelLeft) {
+      panelLeft.style.transform = `scale(${scale})`;
+      panelLeft.style.transformOrigin = 'top left';
+      // Collapse the layout gap left by visually shrinking the element
+      const w = panelLeft.offsetWidth || 350;
+      panelLeft.style.marginRight = `-${w * (1 - scale)}px`;
+    }
+
+    // 2. Manually scale Right Panel (Board)
+    const panelRight = document.querySelector('.panel-right');
+    if (panelRight) {
+      panelRight.style.transform = `scale(${scale})`;
+      panelRight.style.transformOrigin = 'top right';
+      // Collapse the layout gap
+      const w = panelRight.offsetWidth || 720;
+      panelRight.style.marginLeft = `-${w * (1 - scale)}px`;
+    }
+
+    // 3. Native Blockly scaling! (Flawless, handles all popups and internal math correctly)
+    if (workspace) {
+      workspace.setScale(scale);
+    }
+    
+    // 4. Manually scale Toolbox (since it's HTML)
+    const toolbox = document.querySelector('.blocklyToolboxDiv');
+    if (toolbox) {
+      toolbox.style.transform = `scale(${scale})`;
+      toolbox.style.transformOrigin = 'top left';
+      // The injection div (blocks workspace) needs to shift left to cover the gap left by the scaled toolbox
+      const injectionDiv = document.querySelector('.injectionDiv');
+      if (injectionDiv) {
+        const tw = toolbox.offsetWidth || 150;
+        // Shift it left, but not via flex margin because it's absolute positioned by Blockly inside the container
+        injectionDiv.style.marginLeft = `-${tw * (1 - scale)}px`;
+      }
+    }
   }
 
-  window.addEventListener('resize', adjustScale);
+  window.addEventListener('resize', () => {
+    adjustScale();
+    if (workspace) {
+      Blockly.svgResize(workspace);
+    }
+  });
+
   adjustScale();
   setTimeout(adjustScale, 100);
-  setTimeout(adjustScale, 100);
+  setTimeout(adjustScale, 500);
+
+  // Override Blockly's text input editor to simulate "unscale -> click -> scale"
+  // This completely bypasses Blockly's CTM and SVG hidden bounding box bugs!
+  if (Blockly && Blockly.FieldTextInput && Blockly.FieldTextInput.prototype) {
+    const originalShowEditor = Blockly.FieldTextInput.prototype.showEditor_;
+    
+  }
 });

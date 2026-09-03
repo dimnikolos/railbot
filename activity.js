@@ -1,10 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Config
   const GRID_SIZE = 5;
-  const CELL_SIZE = 80;
-  const GAP_SIZE = 4;
-  const STEP = CELL_SIZE + GAP_SIZE; // Total pixels per tile jump
-  const TRAIN_SIZE_MULT = 0.6; // Train size relative to CELL_SIZE
+  const { CELL_SIZE, GAP_SIZE, STEP, TRAIN_SIZE_MULT } = window.CONFIG;
 
   // DOM Elements
   const grid = document.getElementById('grid');
@@ -68,20 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let boulders = []; // array of {x, y, el}
 
   // Icons for Queue
-  const ICONS = {
-    'straight': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m-5 5l5-5 5 5"/></svg>',
-    'left': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 10L5 6l4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 6h8a6 6 0 016 6v7"/></svg>',
-    'right': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4-4-4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M19 6h-8a6 6 0 00-6 6v7"/></svg>'
-  };
+  const ICONS = window.ASSETS.ICONS;
 
-  const BOULDER_SVG = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-    <!-- Boulder 1 -->
-    <path d="M 20 60 Q 30 30 50 50 Q 70 70 40 75 Q 15 70 20 60 Z" fill="#64748b" stroke="#475569" stroke-width="2"/>
-    <!-- Boulder 2 -->
-    <path d="M 40 55 Q 50 20 70 40 Q 80 65 60 70 Q 30 65 40 55 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-    <!-- Boulder 3 -->
-    <path d="M 10 50 Q 20 20 40 35 Q 30 60 15 55 Z" fill="#475569" stroke="#334155" stroke-width="2"/>
-  </svg>`;
+  const BOULDER_SVG = window.ASSETS.BOULDER_SVG;
 
   // Init grid visuals
   for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
@@ -116,23 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function addPassenger(x, y) {
     const p = document.createElement('div');
     p.className = 'passenger';
-    p.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-      <!-- Platform -->
-      <rect x="4" y="24" width="40" height="6" rx="2" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
-      <!-- Main Building -->
-      <rect x="8" y="12" width="32" height="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-      <!-- Roof -->
-      <path d="M 4 12 L 24 2 L 44 12 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5" stroke-linejoin="round"/>
-      <!-- Clock -->
-      <circle cx="24" cy="8" r="2.5" fill="#ffffff" stroke="#991b1b" stroke-width="1"/>
-      <line x1="24" y1="8" x2="24" y2="6.5" stroke="#991b1b" stroke-width="0.5"/>
-      <line x1="24" y1="8" x2="25.5" y2="8" stroke="#991b1b" stroke-width="0.5"/>
-      <!-- Door -->
-      <rect x="20" y="16" width="8" height="8" rx="1" fill="#78350f"/>
-      <!-- Windows -->
-      <rect x="12" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
-      <rect x="31" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
-    </svg>`;
+    p.innerHTML = window.ASSETS.STATION_SVG;
     p.style.transform = `translate(${x * STEP}px, ${y * STEP}px)`;
     passengerLayer.appendChild(p);
     passengers.push({ x, y, el: p, collected: false });
@@ -468,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const remaining = passengers.filter(p => !p.collected).length;
     if (remaining === 0) {
       showError("Level completed! 🎉");
-      level++;
+      level = (level + 1) % 6;
       levelDisplay.textContent = level;
       setTimeout(() => clearQueue(), 2000);
     }
@@ -486,23 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tInner = document.createElement('div');
     tInner.className = 'track-inner';
 
-    let svgPath = '';
-    if (cmd === 'straight') {
-      svgPath = `
-        <path d="M 0 40 L 80 40" stroke="#78350f" stroke-width="20" stroke-dasharray="6 8" fill="none" />
-        <path d="M 0 32 L 80 32 M 0 48 L 80 48" stroke="#9ca3af" stroke-width="3" fill="none" />
-      `;
-    } else if (cmd === 'right') {
-      svgPath = `
-        <path d="M 80 40 C 58 40, 40 22, 40 0" stroke="#78350f" stroke-width="20" stroke-dasharray="6 8" fill="none" />
-        <path d="M 80 32 C 62.4 32, 48 17.6, 48 0 M 80 48 C 53.5 48, 32 26.5, 32 0" stroke="#9ca3af" stroke-width="3" fill="none" />
-      `;
-    } else if (cmd === 'left') {
-      svgPath = `
-        <path d="M 80 40 C 58 40, 40 58, 40 80" stroke="#78350f" stroke-width="20" stroke-dasharray="6 8" fill="none" />
-        <path d="M 80 48 C 62.4 48, 48 62.4, 48 80 M 80 32 C 53.5 32, 32 53.5, 32 80" stroke="#9ca3af" stroke-width="3" fill="none" />
-      `;
-    }
+    let svgPath = window.ASSETS.TRACK_PATHS[cmd] || '';
 
     tInner.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">${svgPath}</svg>`;
     t.appendChild(tInner);
@@ -630,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
   labelLayer.className = 'overlay-layer';
   labelLayer.style.display = 'none'; // Hidden by default
   document.querySelector('.board-container').appendChild(labelLayer);
-  
+
   const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let y = 0; y < GRID_SIZE; y++) {
@@ -674,8 +628,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let scale = Math.min(scaleX, scaleY, 1); // Scale down if needed, but not up above 1
 
     // Apply transform visually
-    gameContainer.style.transform = `translateX(-50%) scale(${scale})`;
-    gameContainer.style.transformOrigin = 'top center';
+    gameContainer.style.zoom = scale;
+    if (getComputedStyle(gameContainer).zoom === undefined) {
+      gameContainer.style.transform = `translateX(-50%) scale(${scale})`;
+      gameContainer.style.transformOrigin = 'top center';
+    } else {
+      gameContainer.style.transform = `translateX(-50%)`;
+    }
   }
 
   window.addEventListener('resize', adjustScale);

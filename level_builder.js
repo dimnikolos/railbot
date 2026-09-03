@@ -16,15 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const blocklyDiv = document.getElementById('blocklyDiv');
   const btnHeaderBack = document.getElementById('btnHeaderBack');
   
+  const isAdvanced = blocklyDiv !== null;
+  const GRID_SIZE = isAdvanced ? 8 : 5;
+  const levelKey = isAdvanced ? 'advanced' : 'normal';
+
   let isBuilderActive = false;
   let customObjects = [];
   let currentBuilderLevel = 1;
   
-  const CELL_SIZE = 80;
-  const GAP_SIZE = 4;
-  const STEP = CELL_SIZE + GAP_SIZE;
+  const { CELL_SIZE, GAP_SIZE, STEP } = window.CONFIG;
 
-  // Listen to pencil icons
   if (editLevelBtns) {
     editLevelBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -43,13 +44,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (playControls) playControls.style.display = 'none';
     if (builderControls) builderControls.style.display = 'flex';
     if (levelDisplay) levelDisplay.textContent = currentBuilderLevel;
-    if (blocklyDiv) blocklyDiv.style.visibility = 'hidden';
+    
+    // Normal mode specific logic
+    if (!isAdvanced) {
+      const panelMiddle = document.querySelector('.panel-middle');
+      if (panelMiddle) panelMiddle.style.display = 'none';
+      const panelLeft = document.querySelector('.panel-left');
+      if (panelLeft) {
+        panelLeft.style.flex = '1';
+        panelLeft.style.justifyContent = 'center';
+      }
+    } else {
+      if (blocklyDiv) blocklyDiv.style.visibility = 'hidden';
+    }
     
     // Clear and load existing level objects
     if (passengerLayer) passengerLayer.innerHTML = '';
     customObjects = [];
     
-    const existingData = window.LEVELS.advanced[currentBuilderLevel] || [];
+    const existingData = window.LEVELS[levelKey][currentBuilderLevel] || [];
     existingData.forEach(obj => {
       const type = obj.type || 'station';
       setCellState(obj.x, obj.y, type);
@@ -65,14 +78,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (boardContainer) boardContainer.classList.remove('builder-mode');
     if (playControls) playControls.style.display = 'flex';
     if (builderControls) builderControls.style.display = 'none';
-    if (blocklyDiv) blocklyDiv.style.visibility = 'visible';
+    
+    if (!isAdvanced) {
+      const panelMiddle = document.querySelector('.panel-middle');
+      if (panelMiddle) panelMiddle.style.display = '';
+      const panelLeft = document.querySelector('.panel-left');
+      if (panelLeft) {
+        panelLeft.style.flex = '';
+        panelLeft.style.justifyContent = '';
+      }
+    } else {
+      if (blocklyDiv) blocklyDiv.style.visibility = 'visible';
+    }
     
     if (saved) {
       showToast(`Level ${currentBuilderLevel} saved!`, true);
-      window.dispatchEvent(new Event('reloadAdvancedLevel'));
+      if (isAdvanced) {
+        window.dispatchEvent(new Event('reloadAdvancedLevel'));
+      } else {
+        if (window.setCurrentLevel) {
+          window.setCurrentLevel(currentBuilderLevel);
+        }
+      }
     } else {
       showToast(`Builder cancelled.`, false);
-      window.dispatchEvent(new Event('reloadAdvancedLevel'));
+      if (isAdvanced) {
+        window.dispatchEvent(new Event('reloadAdvancedLevel'));
+      } else {
+        if (btnClear) btnClear.click();
+      }
     }
   }
 
@@ -92,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const newLevelData = customObjects.map(obj => ({x: obj.x, y: obj.y, type: obj.type}));
-      window.LEVELS.advanced[currentBuilderLevel] = newLevelData;
+      window.LEVELS[levelKey][currentBuilderLevel] = newLevelData;
       if (window.saveLevels) {
         window.saveLevels();
       }
@@ -126,30 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const index = cells.indexOf(cell);
       if (index === -1) return;
       
-      const x = index % 8;
-      const y = Math.floor(index / 8);
+      const x = index % GRID_SIZE;
+      const y = Math.floor(index / GRID_SIZE);
       
       cycleCellState(x, y);
     });
   }
 
-  const STATION_SVG = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-    <rect x="4" y="24" width="40" height="6" rx="2" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
-    <rect x="8" y="12" width="32" height="12" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-    <path d="M 4 12 L 24 2 L 44 12 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5" stroke-linejoin="round"/>
-    <circle cx="24" cy="8" r="2.5" fill="#ffffff" stroke="#991b1b" stroke-width="1"/>
-    <line x1="24" y1="8" x2="24" y2="6.5" stroke="#991b1b" stroke-width="0.5"/>
-    <line x1="24" y1="8" x2="25.5" y2="8" stroke="#991b1b" stroke-width="0.5"/>
-    <rect x="20" y="16" width="8" height="8" rx="1" fill="#78350f"/>
-    <rect x="12" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
-    <rect x="31" y="16" width="5" height="5" rx="1" fill="#bae6fd" stroke="#0284c7" stroke-width="1"/>
-  </svg>`;
-
-  const BOULDER_SVG = `<svg viewBox="0 0 80 80" width="100%" height="100%">
-    <path d="M 20 60 Q 30 30 50 50 Q 70 70 40 75 Q 15 70 20 60 Z" fill="#64748b" stroke="#475569" stroke-width="2"/>
-    <path d="M 40 55 Q 50 20 70 40 Q 80 65 60 70 Q 30 65 40 55 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-    <path d="M 10 50 Q 20 20 40 35 Q 30 60 15 55 Z" fill="#475569" stroke="#334155" stroke-width="2"/>
-  </svg>`;
+  const STATION_SVG = window.ASSETS.STATION_SVG;
+  const BOULDER_SVG = window.ASSETS.BOULDER_SVG;
 
   function setCellState(x, y, type) {
     const existingIndex = customObjects.findIndex(obj => obj.x === x && obj.y === y);

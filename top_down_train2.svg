@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 800 800"
+   width="800"
+   height="800"
+   version="1.1"
+   id="svg47"
+   sodipodi:docname="top_down_train2.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview47"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.61875"
+     inkscape:cx="374.94949"
+     inkscape:cy="286.86869"
+     inkscape:window-width="1366"
+     inkscape:window-height="697"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg47"
+     showguides="true">
+    <sodipodi:guide
+       position="533.33333,601.21212"
+       orientation="0,-1"
+       id="guide49"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs6">
+    <!-- Gradients to give a subtle 3D cylinder/volume effect while keeping it flat -->
+    <linearGradient
+       id="boilerGrad"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="0%">
+      <stop
+         offset="0%"
+         stop-color="#0033aa"
+         id="stop1" />
+      <stop
+         offset="50%"
+         stop-color="#0066ff"
+         id="stop2" />
+      <stop
+         offset="100%"
+         stop-color="#0033aa"
+         id="stop3" />
+    </linearGradient>
+    <linearGradient
+       id="cabinGrad"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="0%">
+      <stop
+         offset="0%"
+         stop-color="#cc1111"
+         id="stop4" />
+      <stop
+         offset="50%"
+         stop-color="#ff3333"
+         id="stop5" />
+      <stop
+         offset="100%"
+         stop-color="#cc1111"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#boilerGrad"
+       id="linearGradient50"
+       x1="338.13212"
+       y1="124.2118"
+       x2="627.95966"
+       y2="124.2118"
+       gradientTransform="scale(0.82807867,1.2076147)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     id="wheels">
+    <!-- Left Wheels (visible at the edges) -->
+    <rect
+       x="200"
+       y="250"
+       width="40"
+       height="80"
+       rx="10"
+       fill="#111"
+       id="rect6" />
+    <rect
+       x="200"
+       y="420"
+       width="40"
+       height="80"
+       rx="10"
+       fill="#111"
+       id="rect7" />
+    <rect
+       x="200"
+       y="590"
+       width="40"
+       height="80"
+       rx="10"
+       fill="#111"
+       id="rect8" />
+    <!-- Right Wheels (visible at the edges) -->
+    <rect
+       x="560"
+       y="250"
+       width="40"
+       height="80"
+       rx="10"
+       fill="#111"
+       id="rect9" />
+    <rect
+       x="560"
+       y="420"
+       width="40"
+       height="80"
+       rx="10"
+       fill="#111"
+       id="rect10" />
+    <rect
+       x="560"
+       y="590"
+       width="40"
+       height="80"
+       rx="10"
+       fill="#111"
+       id="rect11" />
+    <!-- Link/Connecting Rods for the wheels -->
+    <rect
+       x="215"
+       y="290"
+       width="10"
+       height="340"
+       rx="5"
+       fill="#aaa"
+       id="rect12" />
+    <rect
+       x="575"
+       y="290"
+       width="10"
+       height="340"
+       rx="5"
+       fill="#aaa"
+       id="rect13" />
+  </g>
+  <polygon
+     points="230,150 400,50 570,150 "
+     fill="#222222"
+     id="polygon14"
+     transform="matrix(1,0,0,1.4040404,0.8787879,-58.111111)" />
+  <g
+     id="base_frame">
+    <!-- The main chassis/frame underlying everything -->
+    <rect
+       x="230"
+       y="150"
+       width="340"
+       height="580"
+       rx="20"
+       fill="#2a2a2a"
+       id="rect14" />
+  </g>
+  <line
+     x1="486.28467"
+     y1="101.47758"
+     x2="486.28467"
+     y2="212.87454"
+     stroke="#111111"
+     stroke-width="8.66293"
+     stroke-linecap="round"
+     id="line14-7-1-2"
+     style="stroke:#ffffff;stroke-opacity:1" />
+  <g
+     id="pistons">
+    <!-- Left Piston Box -->
+    <rect
+       x="210"
+       y="140"
+       width="60"
+       height="120"
+       rx="10"
+       fill="url(#boilerGrad)"
+       id="rect18" />
+    <rect
+       x="220"
+       y="150"
+       width="40"
+       height="100"
+       rx="5"
+       fill="#333"
+       id="rect19" />
+    <!-- Right Piston Box -->
+    <rect
+       x="530"
+       y="140"
+       width="60"
+       height="120"
+       rx="10"
+       fill="url(#boilerGrad)"
+       id="rect20" />
+    <rect
+       x="540"
+       y="150"
+       width="40"
+       height="100"
+       rx="5"
+       fill="#333"
+       id="rect21" />
+  </g>
+  <line
+     x1="314.66483"
+     y1="100.60419"
+     x2="314.66483"
+     y2="212.00116"
+     stroke="#111111"
+     stroke-width="8.66293"
+     stroke-linecap="round"
+     id="line14-7-1"
+     style="stroke:#ffffff;stroke-opacity:1" />
+  <line
+     x1="358.27084"
+     y1="79.331467"
+     x2="358.27084"
+     y2="190.72844"
+     stroke="#111111"
+     stroke-width="8.66293"
+     stroke-linecap="round"
+     id="line14-7"
+     style="stroke:#ffffff;stroke-opacity:1" />
+  <line
+     x1="400.95959"
+     y1="50.791409"
+     x2="400.95959"
+     y2="162.18839"
+     stroke="#111111"
+     stroke-width="8.66293"
+     stroke-linecap="round"
+     id="line14"
+     style="stroke:#ffffff;stroke-opacity:1" />
+  <line
+     x1="442.67865"
+     y1="80.204857"
+     x2="442.67865"
+     y2="191.60182"
+     stroke="#111111"
+     stroke-width="8.66293"
+     stroke-linecap="round"
+     id="line14-7-14"
+     style="stroke:#ffffff;stroke-opacity:1" />
+  <g
+     id="boiler"
+     transform="matrix(1,0,0,1.0831169,0,-41.558442)">
+    <!-- Main Engine Boiler Cylinder (Blue) -->
+    <rect
+       x="280"
+       y="150"
+       width="240"
+       height="350"
+       rx="20"
+       fill="url(#boilerGrad)"
+       id="rect22"
+       style="fill:url(#linearGradient50)" />
+    <!-- Shiny metallic highlight for the cylinder -->
+    <rect
+       x="375"
+       y="150"
+       width="50"
+       height="350"
+       fill="#ffffff"
+       opacity="0.15"
+       id="rect23" />
+    <!-- Colored Bands surrounding the boiler (Red) -->
+    <rect
+       x="275"
+       y="230"
+       width="250"
+       height="25"
+       rx="5"
+       fill="#ff2222"
+       id="rect24" />
+    <rect
+       x="275"
+       y="320"
+       width="250"
+       height="25"
+       rx="5"
+       fill="#ff2222"
+       id="rect25" />
+    <rect
+       x="275"
+       y="410"
+       width="250"
+       height="25"
+       rx="5"
+       fill="#ff2222"
+       id="rect26" />
+    <!-- Steam Dome (Brass/Gold color) -->
+    <circle
+       cx="400"
+       cy="350"
+       r="35"
+       fill="#d4af37"
+       id="circle26" />
+    <circle
+       cx="400"
+       cy="350"
+       r="20"
+       fill="#ffd700"
+       id="circle27" />
+    <circle
+       cx="400"
+       cy="350"
+       r="10"
+       fill="#ffffff"
+       opacity="0.4"
+       id="circle28" />
+  </g>
+  <g
+     id="smokestack">
+    <!-- Smokestack base -->
+    <circle
+       cx="400"
+       cy="180"
+       r="50"
+       fill="#222"
+       id="circle29" />
+    <circle
+       cx="400"
+       cy="180"
+       r="40"
+       fill="#333"
+       id="circle30" />
+    <!-- Brass rim -->
+    <circle
+       cx="400"
+       cy="180"
+       r="35"
+       fill="#d4af37"
+       id="circle31" />
+    <circle
+       cx="400"
+       cy="180"
+       r="30"
+       fill="#ffd700"
+       id="circle32" />
+    <!-- Inner depth/hole -->
+    <circle
+       cx="400"
+       cy="180"
+       r="25"
+       fill="#111"
+       id="circle33" />
+    <circle
+       cx="400"
+       cy="180"
+       r="15"
+       fill="#000"
+       id="circle34" />
+  </g>
+  <g
+     id="cabin">
+    <!-- Main Driver's Cabin base (Red) -->
+    <rect
+       x="240"
+       y="500"
+       width="320"
+       height="220"
+       rx="20"
+       fill="url(#cabinGrad)"
+       id="rect34" />
+    <!-- Cabin Roof Extrusion -->
+    <rect
+       x="260"
+       y="520"
+       width="280"
+       height="180"
+       rx="15"
+       fill="#b01010"
+       id="rect35" />
+    <rect
+       x="270"
+       y="530"
+       width="260"
+       height="160"
+       rx="10"
+       fill="#ff2222"
+       id="rect36" />
+    <!-- Roof light reflection -->
+    <rect
+       x="360"
+       y="530"
+       width="80"
+       height="160"
+       fill="#fff"
+       opacity="0.15"
+       id="rect37" />
+    <!-- Top Skylights / Vents -->
+    <rect
+       x="300"
+       y="560"
+       width="80"
+       height="40"
+       rx="10"
+       fill="#1a1a1a"
+       id="rect38" />
+    <rect
+       x="420"
+       y="560"
+       width="80"
+       height="40"
+       rx="10"
+       fill="#1a1a1a"
+       id="rect39" />
+    <rect
+       x="300"
+       y="630"
+       width="200"
+       height="40"
+       rx="10"
+       fill="#1a1a1a"
+       id="rect40" />
+    <!-- Metallic louvers/grills inside the vents -->
+    <line
+       x1="320"
+       y1="560"
+       x2="320"
+       y2="600"
+       stroke="#333"
+       stroke-width="4"
+       id="line40" />
+    <line
+       x1="340"
+       y1="560"
+       x2="340"
+       y2="600"
+       stroke="#333"
+       stroke-width="4"
+       id="line41" />
+    <line
+       x1="360"
+       y1="560"
+       x2="360"
+       y2="600"
+       stroke="#333"
+       stroke-width="4"
+       id="line42" />
+    <line
+       x1="440"
+       y1="560"
+       x2="440"
+       y2="600"
+       stroke="#333"
+       stroke-width="4"
+       id="line43" />
+    <line
+       x1="460"
+       y1="560"
+       x2="460"
+       y2="600"
+       stroke="#333"
+       stroke-width="4"
+       id="line44" />
+    <line
+       x1="480"
+       y1="560"
+       x2="480"
+       y2="600"
+       stroke="#333"
+       stroke-width="4"
+       id="line45" />
+  </g>
+  <g
+     id="rear_bumper">
+    <!-- Back connection bumper -->
+    <rect
+       x="340"
+       y="720"
+       width="120"
+       height="30"
+       fill="#111"
+       rx="10"
+       id="rect45" />
+    <rect
+       x="350"
+       y="730"
+       width="100"
+       height="30"
+       fill="#222"
+       rx="5"
+       id="rect46" />
+    <!-- Train Coupler / Hook Pin -->
+    <circle
+       cx="400"
+       cy="760"
+       r="18"
+       fill="#444"
+       id="circle46" />
+    <circle
+       cx="400"
+       cy="760"
+       r="10"
+       fill="#222"
+       id="circle47" />
+  </g>
+</svg>

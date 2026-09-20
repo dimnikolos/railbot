@@ -16,7 +16,7 @@
 
     <div class="app-navbar">
       <div class="navbar-left">
-        <img src="icon.png" alt="Railbot Logo" style="width: 48px; height: 48px; object-fit: contain;">
+        <img src="icon.png" alt="Railbot Logo" class="navbar-logo">
         <h1>Railbot</h1>
       </div>
 
@@ -27,27 +27,21 @@
 
       <div class="navbar-right">
         <div class="level-info">
-          <button id="btnPrevLevel" class="icon-btn"
-            style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Previous Level">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-              style="width: 20px; height: 20px;">
+          <button id="btnPrevLevel" class="navbar-icon-btn" title="Previous Level">
+            <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <span>Level <span id="levelDisplay">1</span></span>
-          <button id="btnNextLevel" class="icon-btn"
-            style="background: none; border: none; cursor: pointer; color: var(--primary);" title="Next Level">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-              style="width: 20px; height: 20px;">
+          <button id="btnNextLevel" class="navbar-icon-btn" title="Next Level">
+            <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
 
-        <button class="icon-btn" id="btnSettings" title="Ρυθμίσεις"
-          style="background: none; border: none; cursor: pointer; color: var(--primary);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            style="width: 28px; height: 28px;">
+        <button id="btnSettings" class="navbar-icon-btn" title="Ρυθμίσεις">
+          <svg class="icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -61,8 +55,8 @@
       <!-- Left Panel: Available Commands & Builder Controls -->
       <div class="panel-left">
         <!-- Normal Play Controls -->
-        <div id="playControls" style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-          <h3 style="margin: 0; color: var(--primary);">Commands</h3>
+        <div id="playControls" class="play-controls-col">
+          <h3 class="panel-heading">Commands</h3>
           <div class="buttons-grid">
             <button class="control-btn" id="btnLeft" title="Turn Left Arc">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -106,29 +100,26 @@
         </div>
 
         <!-- Builder Controls -->
-        <div id="builderControls"
-          style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center;">
-          <h2 style="margin: 0; color: var(--primary); font-size: 2rem;">Builder Mode</h2>
-          <p style="font-size: 1.1rem; margin: 0; color: #64748b;">Click the grid to place or remove objects.</p>
-          <div style="display: flex; flex-direction: column; width: 100%; max-width: 300px; gap: 16px;">
-            <button class="control-btn action-btn play-btn" id="btnSaveBuilder"
-              style="width: 100%; height: 60px; font-size: 1.2rem; border-radius: 12px; font-weight: bold;">Save</button>
-            <button class="control-btn action-btn stop-btn" id="btnCancelBuilder"
-              style="width: 100%; height: 60px; font-size: 1.2rem; border-radius: 12px; font-weight: bold;">Cancel</button>
+        <div id="builderControls" class="builder-controls-wrapper">
+          <h2 class="builder-title">Builder Mode</h2>
+          <p class="builder-subtitle">Click the grid to place or remove objects.</p>
+          <div class="builder-buttons-col">
+            <button class="builder-btn save-btn" id="btnSaveBuilder">Save</button>
+            <button class="builder-btn cancel-btn" id="btnCancelBuilder">Cancel</button>
           </div>
         </div>
       </div>
 
       <!-- Middle Panel: Program / Queue -->
       <div class="panel-middle">
-        <h3 style="margin: 0; color: var(--primary);">Program</h3>
+        <h3 class="panel-heading">Program</h3>
         <div class="queue-display vertical" id="queueDisplay">
           <!-- Queued commands will appear here vertically -->
         </div>
       </div>
 
       <!-- Right Panel: Game Grid -->
-      <div class="panel-right" style="position: relative;">
+      <div class="panel-right panel-right-relative">
         <button id="btnToggleLabels" class="btn-toggle-labels" title="Toggle Coordinates">A1</button>
         <div class="board-container">
           <div id="grid" class="grid">
@@ -158,7 +149,7 @@
   <!-- Settings Modal -->
   <div id="settingsModal" class="modal">
     <div class="modal-content glass">
-      <h2 style="margin-top: 0; color: var(--primary);">Settings</h2>
+      <h2 class="modal-title">Settings</h2>
 
       <div class="setting-item">
         <label>Speed (Train):</label>
@@ -192,7 +183,7 @@
         </div>
       </div>
 
-      <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px;">
+      <div class="setting-item setting-item-col">
         <label>Levels:</label>
         <div class="levels-grid">
           <button class="level-box edit-level-btn" data-level="1">1</button>
@@ -202,15 +193,15 @@
           <button class="level-box edit-level-btn" data-level="5">5</button>
           <button class="level-box edit-level-btn" data-level="6">6</button>
         </div>
-        <button id="btnResetLevels" class="control-btn"
-          style="margin-top: 16px; width: 100%; height: 44px; background: #ef4444; color: #ffffff; font-weight: 700; border-radius: 8px; border: 2px solid #b91c1c; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); letter-spacing: 0.5px;">
+        <button id="btnResetLevels" class="control-btn reset-levels-btn">
           🔄 Reset Levels to Default
         </button>
       </div>
-
-      <button id="btnCloseSettings" class="control-btn"
-        style="margin-top: 16px; width: 100%; height: 40px; font-weight: 600;">Close</button>
+      <button id="btnCloseSettings" class="control-btn close-settings-btn">Close</button>
     </div>
+
+
+  </div>
   </div>
 
   <audio id="audioTrack" loop>

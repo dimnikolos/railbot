@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const grid = document.getElementById('grid');
   const trackLayer = document.getElementById('trackLayer');
+  const debugTrackLayer = document.getElementById('debugTrackLayer');
   const passengerLayer = document.getElementById('passengerLayer');
   const trainEl = document.getElementById('train');
   const toast = document.getElementById('toast');
@@ -30,13 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogicOff = document.getElementById('btnLogicOff');
   const btnLogicOn = document.getElementById('btnLogicOn');
 
+  const btnDebugOff = document.getElementById('btnDebugOff');
+  const btnDebugOn = document.getElementById('btnDebugOn');
+
   // Game State
   let isPlaying = false;
   let isStopped = false;
   let level = 1;
   let isFast = false;
-  let isSoundOn = true;
+  let isSoundOn = false;
   let isLogicOn = false;
+  let isDebugOn = false;
 
   // Directions: 0=Up, 1=Right, 2=Down, 3=Left
   let trainState = {
@@ -65,7 +70,16 @@ document.addEventListener('DOMContentLoaded', () => {
     init: function () {
       this.jsonInit({
         "type": "move_straight",
-        "message0": "⬆️",
+        "message0": "%1",
+        "args0": [
+          {
+            "type": "field_image",
+            "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12 20V4m-5 5l5-5 5 5' /%3E%3C/svg%3E",
+            "width": 24,
+            "height": 24,
+            "alt": "Move Forward"
+          }
+        ],
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,
@@ -78,7 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
     init: function () {
       this.jsonInit({
         "type": "turn_left",
-        "message0": "⬅️",
+        "message0": "%1",
+        "args0": [
+          {
+            "type": "field_image",
+            "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 10L5 6l4-4' /%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 6h8a6 6 0 016 6v7' /%3E%3C/svg%3E",
+            "width": 24,
+            "height": 24,
+            "alt": "Turn Left"
+          }
+        ],
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,
@@ -91,7 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
     init: function () {
       this.jsonInit({
         "type": "turn_right",
-        "message0": "➡️",
+        "message0": "%1",
+        "args0": [
+          {
+            "type": "field_image",
+            "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15 10l4-4-4-4' /%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 6h-8a6 6 0 00-6 6v7' /%3E%3C/svg%3E",
+            "width": 24,
+            "height": 24,
+            "alt": "Turn Right"
+          }
+        ],
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,
@@ -104,7 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
     init: function () {
       this.jsonInit({
         "type": "action_sound",
-        "message0": "🚂🎵",
+        "message0": "%1",
+        "args0": [
+          {
+            "type": "field_image",
+            "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 18V5l12-2v13M9 9l12-2M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z' /%3E%3C/svg%3E",
+            "width": 24,
+            "height": 24,
+            "alt": "Whistle"
+          }
+        ],
         "previousStatement": null,
         "nextStatement": null,
         "colour": 330,
@@ -196,11 +237,31 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
+  const railbotTheme = Blockly.Theme.defineTheme('railbotTheme', {
+    base: Blockly.Themes.Zelos,
+    fontStyle: {
+      family: 'Inter, sans-serif',
+      weight: 'bold',
+      size: 18
+    }
+  });
+
   const workspace = Blockly.inject('blocklyDiv', {
     toolbox: toolboxConfig,
     renderer: 'zelos',
     horizontalLayout: false,    // Κάθετη διάταξη toolbox
-    toolboxPosition: 'start'    // Toolbox στα αριστερά
+    toolboxPosition: 'start',   // Toolbox στα αριστερά
+    theme: railbotTheme
+  });
+
+  workspace.addChangeListener((e) => {
+    if (e.type === Blockly.Events.BLOCK_MOVE || e.type === Blockly.Events.BLOCK_CHANGE || e.type === Blockly.Events.BLOCK_DELETE || e.type === Blockly.Events.BLOCK_CREATE) {
+      if (isDebugOn && !isPlaying) {
+        if (typeof simulateAndRender === 'function') simulateAndRender(true);
+      } else if (!isDebugOn && !isPlaying) {
+        if (debugTrackLayer) debugTrackLayer.innerHTML = '';
+      }
+    }
   });
 
   function createStartBlock() {
@@ -257,6 +318,97 @@ document.addEventListener('DOMContentLoaded', () => {
     return ast;
   }
 
+  function simulateAndRender(forPreview = false) {
+    if (debugTrackLayer) debugTrackLayer.innerHTML = '';
+
+    const ast = generateASTFromWorkspace();
+    if (ast.length === 0) return { derailed: false, msg: null };
+
+    let simState = { x: 0, y: GRID_SIZE - 1, dir: 0, rotation: 0 };
+    let derailed = false;
+    let derailMsg = null;
+
+    function simCheckBoulderAhead() {
+      let nextX = simState.x;
+      let nextY = simState.y;
+      if (simState.dir === 0) nextY -= 1;
+      else if (simState.dir === 1) nextX += 1;
+      else if (simState.dir === 2) nextY += 1;
+      else if (simState.dir === 3) nextX -= 1;
+      return boulders.some(b => b.x === nextX && b.y === nextY);
+    }
+
+    function simExecuteNode(node) {
+      if (derailed) return;
+      if (node.type === 'straight' || node.type === 'left' || node.type === 'right') {
+        const cmd = node.type;
+
+        const t = document.createElement('div');
+        t.className = 'track debug-track' + (!forPreview ? ' faded' : '');
+        t.style.transform = `translate(${simState.x * STEP}px, ${simState.y * STEP}px) rotate(${simState.rotation + 90}deg)`;
+        const tInner = document.createElement('div');
+        tInner.className = 'track-inner';
+        let svgPath = window.ASSETS.TRACK_PATHS[cmd] || '';
+        tInner.innerHTML = `<svg viewBox="0 0 80 80" width="100%" height="100%">${svgPath}</svg>`;
+        t.appendChild(tInner);
+        debugTrackLayer.appendChild(t);
+
+        let nextX = simState.x;
+        let nextY = simState.y;
+        let nextDir = simState.dir;
+        let nextRotation = simState.rotation;
+
+        if (cmd === 'left') {
+          nextDir = (simState.dir + 3) % 4;
+          nextRotation -= 90;
+        } else if (cmd === 'right') {
+          nextDir = (simState.dir + 1) % 4;
+          nextRotation += 90;
+        }
+
+        if (nextDir === 0) nextY -= 1;
+        else if (nextDir === 1) nextX += 1;
+        else if (nextDir === 2) nextY += 1;
+        else if (nextDir === 3) nextX -= 1;
+
+        simState.x = nextX;
+        simState.y = nextY;
+        simState.dir = nextDir;
+        simState.rotation = nextRotation;
+
+        if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
+          derailed = true;
+          derailMsg = "The train will be derailed.";
+        } else if (boulders.some(b => b.x === nextX && b.y === nextY)) {
+          derailed = true;
+          derailMsg = "The train will crash into boulders!";
+        }
+      } else if (node.type === 'loop') {
+        for (let i = 0; i < node.times; i++) {
+          if (derailed) break;
+          for (let child of node.body) simExecuteNode(child);
+        }
+      } else if (node.type === 'if') {
+        let conditionMet = false;
+        if (node.condition === 'boulder_ahead') {
+          conditionMet = simCheckBoulderAhead();
+        }
+        if (conditionMet) {
+          for (let child of node.thenBranch) simExecuteNode(child);
+        } else if (node.elseBranch && node.elseBranch.length > 0) {
+          for (let child of node.elseBranch) simExecuteNode(child);
+        }
+      }
+    }
+
+    for (let node of ast) {
+      if (derailed) break;
+      simExecuteNode(node);
+    }
+
+    return { derailed, msg: derailMsg };
+  }
+
   // Update Toolbox for logic category visibility
   function updateToolboxVisibility() {
     toolboxConfig.contents[3].hidden = !isLogicOn ? "true" : "false";
@@ -284,6 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
         addBoulder(item.x, item.y);
       }
     });
+
+    if (isDebugOn && !isPlaying) {
+      if (typeof simulateAndRender === 'function') simulateAndRender(true);
+    } else if (!isPlaying) {
+      if (debugTrackLayer) debugTrackLayer.innerHTML = '';
+    }
   }
 
   function addPassenger(x, y) {
@@ -403,6 +561,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setupLevel(); // clean start before execution
+
+    // Pre-check and render the full rail for play
+    if (typeof simulateAndRender === 'function') {
+      const preCheck = simulateAndRender(false); // Populates faded tracks
+      if (preCheck.derailed) {
+        showError(preCheck.msg); // Predict derailment
+      }
+    }
+
     await delay(300);
 
     async function executeMovement(cmd) {
@@ -610,9 +777,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnClear.addEventListener('click', () => {
-    clearWorkspace();
-  });
 
   // Settings Event Listeners
   if (btnSettings) {
@@ -680,6 +844,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLogicOff.classList.add('active');
         btnLogicOn.classList.remove('active');
         updateToolboxVisibility();
+      });
+    }
+
+    if (btnDebugOn) {
+      btnDebugOn.addEventListener('click', () => {
+        isDebugOn = true;
+        btnDebugOn.classList.add('active');
+        btnDebugOff.classList.remove('active');
+        if (!isPlaying && typeof simulateAndRender === 'function') {
+          simulateAndRender(true);
+        }
+      });
+    }
+
+    if (btnDebugOff) {
+      btnDebugOff.addEventListener('click', () => {
+        isDebugOn = false;
+        btnDebugOff.classList.add('active');
+        btnDebugOn.classList.remove('active');
+        if (debugTrackLayer) debugTrackLayer.innerHTML = '';
       });
     }
 
@@ -769,14 +953,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const scaleX = window.innerWidth / (minWidth + padding);
     const scaleY = window.innerHeight / (minHeight + padding);
     let scale = Math.min(scaleX, scaleY, 1);
-    
+
     window.__appScale = scale;
 
     // DO NOT scale the entire game container with CSS transform.
     // This allows Blockly to remain in a 1:1 screen mapping environment, eliminating all popup coordinate bugs!
     gameContainer.style.transform = `translateX(-50%)`;
     gameContainer.style.transformOrigin = 'top center';
-    
+
     // 1. Manually scale Left Panel (Queue)
     const panelLeft = document.querySelector('.panel-left');
     if (panelLeft) {
@@ -801,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (workspace) {
       workspace.setScale(scale);
     }
-    
+
     // 4. Manually scale Toolbox (since it's HTML)
     const toolbox = document.querySelector('.blocklyToolboxDiv');
     if (toolbox) {
@@ -832,6 +1016,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // This completely bypasses Blockly's CTM and SVG hidden bounding box bugs!
   if (Blockly && Blockly.FieldTextInput && Blockly.FieldTextInput.prototype) {
     const originalShowEditor = Blockly.FieldTextInput.prototype.showEditor_;
-    
+
   }
 });

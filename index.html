@@ -184,6 +184,14 @@
         </div>
       </div>
 
+      <div class="setting-item">
+        <label>Debug Mode:</label>
+        <div class="toggle-group">
+          <button id="btnDebugOff" class="toggle-btn active" title="Off">🚫</button>
+          <button id="btnDebugOn" class="toggle-btn" title="On">🐛</button>
+        </div>
+      </div>
+
       <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px;">
         <label>Levels:</label>
         <div class="levels-grid">
@@ -195,8 +203,9 @@
           <button class="level-box edit-level-btn" data-level="6">6</button>
         </div>
         <button id="btnResetLevels" class="control-btn"
-          style="margin-top: 12px; width: 100%; height: 36px; background: var(--boulder); color: #fff;">Reset
-          Levels</button>
+          style="margin-top: 16px; width: 100%; height: 44px; background: #ef4444; color: #ffffff; font-weight: 700; border-radius: 8px; border: 2px solid #b91c1c; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); letter-spacing: 0.5px;">
+          🔄 Reset Levels to Default
+        </button>
       </div>
 
       <button id="btnCloseSettings" class="control-btn"

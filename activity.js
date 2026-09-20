@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioWhistle = document.getElementById('audioWhistle');
   const btnDeleteSingleOff = document.getElementById('btnDeleteSingleOff');
   const btnDeleteSingleOn = document.getElementById('btnDeleteSingleOn');
+  const btnDebugOff = document.getElementById('btnDebugOff');
+  const btnDebugOn = document.getElementById('btnDebugOn');
 
   // Game State
   let queue = [];
@@ -42,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isFast = false;
   let isSoundOn = false;
   let isDeleteSingleOn = false;
+  let isDebugModeOn = false;
 
   window.setCurrentLevel = function (lvl) {
     level = lvl;
@@ -213,12 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
       item.classList.remove('active');
     });
 
-    for (let i = 0; i <= targetIndex; i++) {
+    const drawToIndex = isDebugModeOn ? queue.length - 1 : targetIndex;
+
+    for (let i = 0; i <= drawToIndex; i++) {
       if (i >= queue.length) break;
       const cmd = queue[i];
 
-      // Spawn track at CURRENT position
-      spawnTrack(trainState.x, trainState.y, trainState.rotation, cmd);
+      // Spawn track at CURRENT position (pass true for isSimulation to prevent fading)
+      spawnTrack(trainState.x, trainState.y, trainState.rotation, cmd, true);
 
       let nextX = trainState.x;
       let nextY = trainState.y;
@@ -244,18 +249,18 @@ document.addEventListener('DOMContentLoaded', () => {
       trainState.rotation = nextRotation;
 
       if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-        showError("Derailment! Out of rails!");
+        showError("Derailment! The train will be derailed!");
         trainEl.classList.add('error');
         updateQueueActive(i);
-        updateTrainTransform(0);
+        // Do not update train transform so it stays at the start
         return; // STOP simulation
       }
 
       if (boulders.some(b => b.x === nextX && b.y === nextY)) {
-        showError("Crashed into boulders! 💥");
+        showError("The train will crash into boulders! 🪨");
         trainEl.classList.add('error');
         updateQueueActive(i);
-        updateTrainTransform(0);
+        // Do not update train transform so it stays at the start
         return; // STOP simulation
       }
 
@@ -264,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateQueueActive(targetIndex);
-    updateTrainTransform(0);
+    // Do not update train transform so it stays at the start
   }
 
   // Queue logic
@@ -300,6 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     queueDisplay.appendChild(q);
     queueDisplay.scrollLeft = queueDisplay.scrollWidth;
+
+    if (isDebugModeOn) {
+      simulateQueueTo(queue.length - 1);
+    }
   }
 
   function clearQueue() {
@@ -357,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
           item.classList.remove('executed');
           item.classList.remove('active');
         });
+        if (isDebugModeOn && queue.length > 0) simulateQueueTo(queue.length - 1);
         break;
       }
       const cmd = queue[i];
@@ -444,10 +454,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function spawnTrack(x, y, rot, cmd) {
-    // Fade all existing tracks
-    const existingTracks = trackLayer.querySelectorAll('.track');
-    existingTracks.forEach(tr => tr.classList.add('faded'));
+  function spawnTrack(x, y, rot, cmd, isSimulation = false) {
+    // Fade all existing tracks if not in simulation (debug) mode
+    if (!isSimulation) {
+      const existingTracks = trackLayer.querySelectorAll('.track');
+      existingTracks.forEach(tr => tr.classList.add('faded'));
+    }
 
     const t = document.createElement('div');
     t.className = 'track';
@@ -499,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.classList.remove('executed');
         item.classList.remove('active');
       });
+      if (isDebugModeOn && queue.length > 0) simulateQueueTo(queue.length - 1);
     }
   }
 
@@ -560,6 +573,22 @@ document.addEventListener('DOMContentLoaded', () => {
     btnDeleteSingleOn.classList.add('active');
     btnDeleteSingleOff.classList.remove('active');
     document.body.classList.add('delete-single-mode');
+  });
+
+  btnDebugOff.addEventListener('click', () => {
+    isDebugModeOn = false;
+    btnDebugOff.classList.add('active');
+    btnDebugOn.classList.remove('active');
+    setupLevel();
+    const currentItems = Array.from(queueDisplay.querySelectorAll('.queue-item'));
+    currentItems.forEach(item => { item.classList.remove('active', 'executed'); });
+  });
+
+  btnDebugOn.addEventListener('click', () => {
+    isDebugModeOn = true;
+    btnDebugOn.classList.add('active');
+    btnDebugOff.classList.remove('active');
+    if (queue.length > 0) simulateQueueTo(queue.length - 1);
   });
 
   const btnPrevLevel = document.getElementById('btnPrevLevel');
